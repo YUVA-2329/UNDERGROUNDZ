@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { CartItem } from '../types';
+import { HoverBorderGradient } from './ui/hover-border-gradient';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -125,14 +126,16 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               <span className="font-display text-2xl font-extrabold text-white">${totalPrice.toFixed(2)}</span>
             </div>
 
-            <button
+            <HoverBorderGradient
               id="btn-initiate-checkout-drawer"
+              as="button"
+              containerClassName="w-full rounded-none"
+              className="w-full py-5 bg-white text-black font-display font-bold text-sm uppercase tracking-wider hover:bg-[#c6c6c7] transition-colors active:scale-98 flex items-center justify-center gap-2"
               onClick={handleCheckout}
-              className="w-full py-5 bg-white text-black font-display font-bold text-sm uppercase tracking-wider hover:bg-[#c6c6c7] transition-colors active:scale-98 cursor-pointer flex items-center justify-center gap-2"
             >
               <span>PROCEED TO ENCRYPTED CHECKOUT</span>
               <span className="material-symbols-outlined text-lg">lock</span>
-            </button>
+            </HoverBorderGradient>
           </div>
         )}
       </aside>

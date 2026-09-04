@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { CartItem, CustomerDetails, Order, ViewType } from '../types';
 import { saveOrder, MockUser } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
+import { HoverBorderGradient } from './ui/hover-border-gradient';
 import {
   ShieldAlert,
   CheckCircle2,
@@ -508,22 +509,28 @@ export const DemoPaymentScreen: React.FC<DemoPaymentScreenProps> = ({
 
               {/* Main Action Buttons */}
               <div className="w-full flex flex-col gap-3">
-                <button
+                <HoverBorderGradient
                   id="btn-simulate-demo-payment"
+                  as="button"
+                  containerClassName="w-full rounded-none shadow-lg active:scale-[0.99] transition-all"
+                  className="w-full h-14 bg-[#00ff88] hover:bg-[#00e57a] text-black font-mono font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-colors"
                   onClick={startDemoSimulation}
-                  className="w-full h-14 bg-[#00ff88] hover:bg-[#00e57a] text-black font-mono font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.99] shadow-lg"
+                  highlightColor="radial-gradient(75% 181.15% at 50% 50%, #00ff88 0%, rgba(255, 255, 255, 0) 100%)"
                 >
                   <Zap className="w-4 h-4" />
                   <span>SIMULATE PAYMENT (${total.toFixed(2)})</span>
-                </button>
+                </HoverBorderGradient>
 
-                <button
+                <HoverBorderGradient
                   id="btn-cancel-demo-payment"
+                  as="button"
+                  containerClassName="w-full rounded-none"
+                  className="w-full h-11 bg-[#111114] text-[#888] hover:text-red-400 font-mono text-xs uppercase transition-colors"
                   onClick={onCancel}
-                  className="w-full h-11 border border-[#333] hover:border-red-500 text-[#888] hover:text-red-400 font-mono text-xs uppercase transition-colors cursor-pointer"
+                  highlightColor="radial-gradient(75% 181.15% at 50% 50%, #ef4444 0%, rgba(255, 255, 255, 0) 100%)"
                 >
                   CANCEL PAYMENT & RETURN TO CHECKOUT
-                </button>
+                </HoverBorderGradient>
               </div>
 
               {/* Rider Security Aesthetic note */}

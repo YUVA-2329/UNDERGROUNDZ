@@ -13,6 +13,7 @@ import { CartDrawer } from './components/CartDrawer';
 import { SearchModal } from './components/SearchModal';
 import { SizeGuideModal } from './components/SizeGuideModal';
 import { AccountModal } from './components/AccountModal';
+import { AuthDebugPanel } from './components/AuthDebugPanel';
 import { SystemIndexPage } from './views/SystemIndexPage';
 import { CollectionVoidPage } from './views/CollectionVoidPage';
 import { ProductDetailPage } from './views/ProductDetailPage';
@@ -246,6 +247,7 @@ export default function App() {
         setCurrentView={setCurrentView}
         onSelectCategory={setSelectedCategory}
         onOpenAccount={() => setIsAccountOpen(true)}
+        user={user}
       />
 
       <CartDrawer
@@ -276,6 +278,9 @@ export default function App() {
         user={user}
         setCurrentView={setCurrentView}
       />
+
+      {/* Development Auth Diagnostic Panel */}
+      <AuthDebugPanel user={user} />
     </div>
   );
 }

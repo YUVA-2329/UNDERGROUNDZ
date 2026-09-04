@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ViewType, ProductItem } from '../types';
+import { HoverBorderGradient } from '../components/ui/hover-border-gradient';
 
 interface CollectionVoidPageProps {
   setCurrentView: (view: ViewType) => void;
@@ -184,24 +185,28 @@ export const CollectionVoidPage: React.FC<CollectionVoidPageProps> = ({
                 </div>
 
                 <div className="flex gap-3 items-center">
-                  <button
+                  <HoverBorderGradient
+                    containerClassName="flex-1 rounded-none active:scale-[0.98] transition-transform"
+                    as="button"
+                    className="w-full bg-white text-black py-3 px-4 font-display font-bold text-xs uppercase text-center hover:bg-[#c6c6c7] transition-colors"
                     onClick={() => {
                       onSelectProduct(product);
                       setCurrentView('product');
                     }}
-                    className="flex-1 bg-white text-black py-3 px-4 font-display font-bold text-xs uppercase text-center active:scale-[0.98] transition-transform hover:bg-[#c6c6c7] cursor-pointer"
                   >
                     EXAMINE SPECS
-                  </button>
-                  <button
+                  </HoverBorderGradient>
+                  <HoverBorderGradient
+                    containerClassName="w-12 h-12 rounded-none"
+                    as="button"
+                    className="w-full h-full bg-[#1b1b1b] text-white flex items-center justify-center hover:text-white transition-colors"
                     onClick={() => handleQuickAdd(product)}
-                    className="w-12 h-12 border border-[#444748] bg-[#1b1b1b] flex items-center justify-center hover:bg-white hover:text-black transition-colors cursor-pointer relative"
                     title="Add to Gear Bay"
                   >
                     <span className="material-symbols-outlined">
                       {addedNotice === product.id ? 'check' : 'add'}
                     </span>
-                  </button>
+                  </HoverBorderGradient>
                 </div>
               </div>
             </article>

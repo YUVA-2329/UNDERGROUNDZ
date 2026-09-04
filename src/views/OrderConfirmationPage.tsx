@@ -1,6 +1,7 @@
 import React from 'react';
 import { Order, ViewType } from '../types';
 import { CheckCircle, Package, ArrowRight, Truck, Calendar, MapPin, Mail, ShieldAlert, Sparkles } from 'lucide-react';
+import { HoverBorderGradient } from '../components/ui/hover-border-gradient';
 
 interface OrderConfirmationPageProps {
   order: Order | null;
@@ -21,12 +22,14 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
           <p className="text-xs text-[#888] font-mono mb-6">
             We could not locate active order confirmation details.
           </p>
-          <button
+          <HoverBorderGradient
+            as="button"
+            containerClassName="w-full rounded-none"
+            className="w-full h-12 bg-white text-black font-mono font-bold text-xs uppercase hover:bg-[#ccc] transition-colors"
             onClick={() => setCurrentView('home')}
-            className="w-full h-12 bg-white text-black font-mono font-bold text-xs uppercase hover:bg-[#ccc] cursor-pointer"
           >
             RETURN TO BASE
-          </button>
+          </HoverBorderGradient>
         </div>
       </main>
     );
@@ -191,22 +194,26 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
 
             {/* Navigation Actions */}
             <div className="flex flex-col gap-3">
-              <button
+              <HoverBorderGradient
                 id="btn-view-my-orders"
+                as="button"
+                containerClassName="w-full rounded-none"
+                className="w-full h-12 bg-white hover:bg-[#ccc] text-black font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors"
                 onClick={() => setCurrentView('my-orders')}
-                className="w-full h-12 bg-white hover:bg-[#ccc] text-black font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors cursor-pointer"
               >
                 <span>VIEW MY ORDERS ARCHIVE</span>
                 <ArrowRight className="w-4 h-4" />
-              </button>
+              </HoverBorderGradient>
 
-              <button
+              <HoverBorderGradient
                 id="btn-continue-shopping"
+                as="button"
+                containerClassName="w-full rounded-none"
+                className="w-full h-12 bg-[#101014] text-[#aaa] hover:text-white font-mono font-bold text-xs uppercase tracking-wider transition-colors"
                 onClick={() => setCurrentView('collection')}
-                className="w-full h-12 border border-[#333] hover:border-white text-[#aaa] hover:text-white font-mono font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer"
               >
                 CONTINUE BROWSING CATALOG
-              </button>
+              </HoverBorderGradient>
             </div>
           </div>
         </div>

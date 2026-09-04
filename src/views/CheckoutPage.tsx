@@ -8,6 +8,7 @@ import {
 } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import { DemoPaymentScreen } from '../components/DemoPaymentScreen';
+import { HoverBorderGradient } from '../components/ui/hover-border-gradient';
 import {
   ShieldCheck,
   CreditCard,
@@ -263,13 +264,15 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                   <span>SYNCED: {currentUser.email}</span>
                 </div>
               ) : (
-                <button
+                <HoverBorderGradient
+                  as="button"
+                  containerClassName="rounded-none"
+                  className="flex items-center gap-2 font-mono text-xs text-black bg-white hover:bg-[#ccc] px-4 py-2 uppercase font-bold transition-colors"
                   onClick={handleGoogleLogin}
-                  className="flex items-center gap-2 font-mono text-xs text-black bg-white hover:bg-[#ccc] px-4 py-2 uppercase font-bold cursor-pointer transition-colors"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>SIGN IN WITH GOOGLE</span>
-                </button>
+                </HoverBorderGradient>
               )}
             </div>
 
@@ -525,13 +528,15 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                   </div>
 
                   {/* PROCEED TO PAYMENT BUTTON */}
-                  <button
+                  <HoverBorderGradient
                     id="btn-proceed-to-payment"
+                    as="button"
+                    containerClassName="w-full rounded-none"
+                    className="w-full h-14 bg-white hover:bg-[#ddd] text-black font-mono font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-colors active:scale-[0.99]"
                     onClick={handleProceedToPayment}
-                    className="w-full h-14 bg-white hover:bg-[#ddd] text-black font-mono font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 cursor-pointer transition-colors active:scale-[0.99]"
                   >
                     <span>PROCEED TO PAYMENT (${total.toFixed(2)})</span>
-                  </button>
+                  </HoverBorderGradient>
 
                   <div className="mt-4 flex items-center justify-center gap-2 text-[10px] font-mono text-[#666]">
                     <ShieldCheck className="w-3.5 h-3.5 text-[#00ff88]" />

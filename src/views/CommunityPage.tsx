@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { CommunityPost, FieldReport } from '../types';
+import { HoverBorderGradient } from '../components/ui/hover-border-gradient';
 
 interface CommunityPageProps {
   posts: CommunityPost[];
@@ -148,12 +149,14 @@ export const CommunityPage: React.FC<CommunityPageProps> = ({ posts, onAddPost }
         <p className="font-body text-base text-[#8e9192] max-w-2xl mb-10">
           Submit your field documentation. Selected riders are archived in the System Index and granted access to Prototype Drop Tier 0.
         </p>
-        <button
+        <HoverBorderGradient
+          as="button"
+          containerClassName="rounded-none active:scale-95 transition-all"
+          className="px-12 py-5 bg-white text-black font-mono-tech text-xs uppercase tracking-[0.3em] font-bold hover:bg-[#c6c6c7] transition-colors"
           onClick={() => setIsSubmitOpen(true)}
-          className="px-12 py-5 bg-white text-black font-mono-tech text-xs uppercase tracking-[0.3em] font-bold hover:bg-[#c6c6c7] transition-colors cursor-pointer active:scale-95"
         >
           UPLOAD_LOG_001
-        </button>
+        </HoverBorderGradient>
       </section>
 
       {/* Submission Modal */}
@@ -227,12 +230,14 @@ export const CommunityPage: React.FC<CommunityPageProps> = ({ posts, onAddPost }
                   />
                 </div>
 
-                <button
+                <HoverBorderGradient
+                  as="button"
                   type="submit"
-                  className="w-full py-4 bg-white text-black font-display font-bold uppercase hover:bg-[#c6c6c7] cursor-pointer"
+                  containerClassName="w-full rounded-none"
+                  className="w-full py-4 bg-white text-black font-display font-bold uppercase hover:bg-[#c6c6c7] transition-colors"
                 >
                   TRANSMIT FIELD REPORT
-                </button>
+                </HoverBorderGradient>
               </form>
             )}
           </div>

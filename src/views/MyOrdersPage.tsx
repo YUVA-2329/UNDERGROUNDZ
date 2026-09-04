@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Order, ViewType } from '../types';
 import { getCurrentUser, fetchUserOrders, signInWithGoogle, MockUser } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
+import { HoverBorderGradient } from '../components/ui/hover-border-gradient';
 import {
   Package,
   Calendar,
@@ -116,12 +117,14 @@ export const MyOrdersPage: React.FC<MyOrdersPageProps> = ({
                 Viewing local session history. Sign in with Google to sync cross-device order telemetry.
               </span>
             </div>
-            <button
+            <HoverBorderGradient
+              as="button"
+              containerClassName="rounded-none shrink-0"
+              className="px-4 py-2 bg-white text-black font-bold uppercase hover:bg-[#ccc] transition-colors"
               onClick={() => signInWithGoogle()}
-              className="px-4 py-2 bg-white text-black font-bold uppercase hover:bg-[#ccc] shrink-0 cursor-pointer"
             >
               SIGN IN WITH GOOGLE
-            </button>
+            </HoverBorderGradient>
           </div>
         )}
 
@@ -161,12 +164,14 @@ export const MyOrdersPage: React.FC<MyOrdersPageProps> = ({
             <p className="font-mono text-xs text-[#777] max-w-sm mx-auto mb-6">
               You have no orders matching "{filterStatus}". Browse our collection to initiate your first order.
             </p>
-            <button
+            <HoverBorderGradient
+              as="button"
+              containerClassName="rounded-none mx-auto"
+              className="px-6 py-3 bg-white text-black font-mono font-bold text-xs uppercase hover:bg-[#ccc] transition-colors"
               onClick={() => setCurrentView('collection')}
-              className="px-6 py-3 bg-white text-black font-mono font-bold text-xs uppercase hover:bg-[#ccc] cursor-pointer"
             >
               EXPLORE COLLECTION
-            </button>
+            </HoverBorderGradient>
           </div>
         ) : (
           <div className="flex flex-col gap-4">

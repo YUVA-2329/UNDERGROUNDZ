@@ -5,8 +5,12 @@ const DEFAULT_SUPABASE_URL = 'https://myntjfzjfyzyqnlmwsrd.supabase.co';
 const DEFAULT_SUPABASE_ANON_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15bnRqZnpqZnl6eXFubG13c3JkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg1MjcwNjcsImV4cCI6MjEwNDEwMzA2N30.y00M-47lxwi-cLu4LtuqZB6HaN8nWK0tW0l0E-3QMpE';
 
-const supabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL;
-const supabaseAnonKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
+const supabaseUrl =
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL) ||
+  DEFAULT_SUPABASE_URL;
+const supabaseAnonKey =
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_ANON_KEY) ||
+  DEFAULT_SUPABASE_ANON_KEY;
 
 export const isSupabaseConfigured = Boolean(
   supabaseUrl && 

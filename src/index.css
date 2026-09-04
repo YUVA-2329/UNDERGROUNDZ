@@ -37,6 +37,21 @@
   font-family: 'Geist', sans-serif;
 }
 
+.font-manifesto {
+  font-family: 'Syne', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.font-bebas {
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 0.04em;
+}
+
+.font-oswald {
+  font-family: 'Oswald', sans-serif;
+  letter-spacing: 0.02em;
+}
+
 /* Material symbols */
 .material-symbols-outlined {
   font-family: 'Material Symbols Outlined';

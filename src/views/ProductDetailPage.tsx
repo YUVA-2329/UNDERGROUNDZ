@@ -4,6 +4,7 @@ import { PRODUCT_REVIEWS } from '../data';
 import { ProductImageGallery } from '../components/ProductImageGallery';
 import { PeopleWearingUndergroundz } from '../components/PeopleWearingUndergroundz';
 import { Star, Shield, Zap, Check, AlertCircle, ShoppingBag } from 'lucide-react';
+import { HoverBorderGradient } from '../components/ui/hover-border-gradient';
 
 interface ProductDetailPageProps {
   product: ProductItem;
@@ -256,10 +257,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
               {/* Action Buttons: ADD TO CART & BUY NOW */}
               <div className="flex flex-col sm:flex-row gap-3 mb-6">
-                <button
+                <HoverBorderGradient
                   id="btn-add-to-cart"
+                  as="button"
+                  containerClassName="flex-1 rounded-none"
+                  className="w-full h-14 bg-white text-black font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#e0e0e0] active:scale-[0.99] transition-all"
                   onClick={handleAdd}
-                  className="flex-1 h-14 bg-white text-black font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#e0e0e0] active:scale-[0.99] transition-all cursor-pointer"
                 >
                   {added ? (
                     <>
@@ -272,16 +275,19 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                       <span>ADD TO CART</span>
                     </>
                   )}
-                </button>
+                </HoverBorderGradient>
 
-                <button
+                <HoverBorderGradient
                   id="btn-buy-now"
+                  as="button"
+                  containerClassName="flex-1 rounded-none"
+                  className="w-full h-14 bg-[#ff3300] text-white font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#e02e00] active:scale-[0.99] transition-all"
                   onClick={handleBuyNowClick}
-                  className="flex-1 h-14 bg-[#ff3300] text-white font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#e02e00] active:scale-[0.99] transition-all cursor-pointer"
+                  highlightColor="radial-gradient(75% 181.15% at 50% 50%, #ff5500 0%, rgba(255, 255, 255, 0) 100%)"
                 >
                   <Zap className="w-4 h-4" />
                   <span>BUY NOW</span>
-                </button>
+                </HoverBorderGradient>
               </div>
 
               {/* Assurance bullets */}
@@ -437,12 +443,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
               <span className="font-mono text-sm font-bold text-white uppercase">{product.editionStatus}</span>
             </div>
 
-            <button
+            <HoverBorderGradient
+              containerClassName="w-full rounded-none"
+              as="button"
+              className="w-full h-12 bg-[#0e0e10] text-white font-mono text-xs uppercase hover:text-white transition-all"
               onClick={onOpenSizeGuide}
-              className="w-full h-12 border border-[#444] hover:border-white text-white font-mono text-xs uppercase transition-all cursor-pointer"
             >
               VIEW SIZE GUIDE
-            </button>
+            </HoverBorderGradient>
           </div>
         </div>
       </section>

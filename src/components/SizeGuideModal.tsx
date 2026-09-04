@@ -1,4 +1,5 @@
 import React from 'react';
+import { HoverBorderGradient } from './ui/hover-border-gradient';
 
 interface SizeGuideModalProps {
   isOpen: boolean;
@@ -72,12 +73,14 @@ export const SizeGuideModal: React.FC<SizeGuideModalProps> = ({ isOpen, onClose 
           </div>
         </div>
 
-        <button
+        <HoverBorderGradient
+          as="button"
+          containerClassName="w-full mt-6 rounded-none"
+          className="w-full py-3 bg-white text-black font-display font-bold uppercase text-xs hover:bg-[#c6c6c7] transition-colors"
           onClick={onClose}
-          className="w-full mt-6 py-3 bg-white text-black font-display font-bold uppercase text-xs cursor-pointer hover:bg-[#c6c6c7]"
         >
           CLOSE DIMENSIONAL GUIDE
-        </button>
+        </HoverBorderGradient>
       </div>
     </div>
   );

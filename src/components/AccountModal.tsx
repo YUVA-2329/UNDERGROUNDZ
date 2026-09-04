@@ -4,6 +4,7 @@ import { X, User as UserIcon, LogOut, Package, Shield, ExternalLink } from 'luci
 import { signInWithGoogle, signOut, MockUser } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import { ViewType } from '../types';
+import { HoverBorderGradient } from './ui/hover-border-gradient';
 
 interface AccountModalProps {
   isOpen: boolean;
@@ -99,23 +100,28 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <button
+                  <HoverBorderGradient
                     id="btn-account-my-orders"
+                    as="button"
+                    containerClassName="w-full rounded-none"
+                    className="w-full h-12 bg-white text-black font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#ccc] transition-colors"
                     onClick={handleViewOrders}
-                    className="w-full h-12 bg-white text-black font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#ccc] transition-colors cursor-pointer"
                   >
                     <Package className="w-4 h-4" />
                     <span>MY ORDERS & TRACKING</span>
-                  </button>
+                  </HoverBorderGradient>
 
-                  <button
+                  <HoverBorderGradient
                     id="btn-account-sign-out"
+                    as="button"
+                    containerClassName="w-full rounded-none"
+                    className="w-full h-11 bg-[#111114] text-[#888] hover:text-red-400 font-mono text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors"
                     onClick={handleSignOut}
-                    className="w-full h-11 border border-[#333] hover:border-red-500 text-[#888] hover:text-red-400 font-mono text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                    highlightColor="radial-gradient(75% 181.15% at 50% 50%, #ef4444 0%, rgba(255, 255, 255, 0) 100%)"
                   >
                     <LogOut className="w-4 h-4" />
                     <span>SIGN OUT</span>
-                  </button>
+                  </HoverBorderGradient>
                 </div>
               </div>
             ) : (
@@ -125,10 +131,12 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                   Sign in with Google using Supabase Authentication. Your cart will be preserved, and past orders will automatically sync to your personal profile.
                 </p>
 
-                <button
+                <HoverBorderGradient
                   id="btn-modal-google-signin"
+                  as="button"
+                  containerClassName="w-full rounded-none"
+                  className="h-12 w-full bg-white hover:bg-[#e0e0e0] text-black font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-3 transition-colors"
                   onClick={handleGoogleSignIn}
-                  className="h-12 w-full bg-white hover:bg-[#e0e0e0] text-black font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-3 transition-colors cursor-pointer"
                 >
                   <svg className="w-4 h-4" viewBox="0 0 24 24">
                     <path
@@ -149,7 +157,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                     />
                   </svg>
                   <span>CONTINUE WITH GOOGLE</span>
-                </button>
+                </HoverBorderGradient>
 
                 <div className="p-3 bg-[#131316] border border-[#202026] text-[10px] font-mono text-[#777] flex items-center gap-2">
                   <Shield className="w-3.5 h-3.5 text-[#00ff88]" />

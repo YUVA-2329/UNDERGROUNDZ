@@ -1,5 +1,28 @@
-import React from 'react';
-import { ViewType } from '../types';
+"use client";
+import React, { useState } from "react";
+import { ViewType } from "../types";
+import { Sidebar, SidebarBody, SidebarLink } from "./ui/sidebar";
+import {
+  IconArrowLeft,
+  IconBrandTabler,
+  IconSettings,
+  IconUserBolt,
+} from "@tabler/icons-react";
+import {
+  ShoppingBag,
+  Package,
+  Sparkles,
+  X,
+  Shield,
+  Layers,
+  LogOut,
+} from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { cn } from "../lib/utils";
+import type { User } from "@supabase/supabase-js";
+import { MockUser, signOut } from "../lib/supabase";
+import { SidebarDemo } from "./SidebarDemo";
+import { RIDER_MANIFESTO_LINES } from "./RiderManifestoBanner";
 
 interface NavigationDrawerProps {
   isOpen: boolean;
@@ -8,6 +31,7 @@ interface NavigationDrawerProps {
   setCurrentView: (view: ViewType) => void;
   onSelectCategory: (category: string) => void;
   onOpenAccount?: () => void;
+  user?: User | MockUser | null;
 }
 
 export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
@@ -17,134 +41,382 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
   setCurrentView,
   onSelectCategory,
   onOpenAccount,
+  user,
 }) => {
+  const [open, setOpen] = useState(true);
+  const [showDemoModal, setShowDemoModal] = useState(false);
+  const [manifestoIdx, setManifestoIdx] = useState(0);
+
+  // Cycle through rider lines every 5 seconds with slow smooth transition
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      setManifestoIdx((prev) => (prev + 1) % RIDER_MANIFESTO_LINES.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm transition-opacity animate-fade-in">
-      <aside className="flex flex-col h-full py-10 px-8 bg-[#131313] w-full max-w-sm left-0 border-r border-[#444748] shadow-2xl relative">
-        <div className="mb-10 flex justify-between items-center border-b border-[#3a3a3a] pb-6">
-          <div className="flex flex-col">
-            <span className="font-mono-tech text-xs text-white uppercase tracking-widest">SYSTEM_INDEX / NAV</span>
-            <span className="font-mono-tech text-[10px] text-[#8e9192]">SYS_STATUS: ONLINE</span>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-white hover:text-[#8e9192] transition-colors p-2 cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-2xl">close</span>
-          </button>
-        </div>
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      onClose();
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
-        <div className="flex flex-col gap-2 overflow-y-auto hide-scrollbar flex-1 pb-4">
-          <button
-            onClick={() => {
-              setCurrentView('home');
-              onClose();
-            }}
-            className={`text-left font-display text-2xl uppercase py-3 px-4 border-l-2 transition-all ${
-              currentView === 'home'
-                ? 'border-white text-white bg-[#1f1f1f]'
-                : 'border-transparent text-[#8e9192] hover:text-white hover:border-[#3a3a3a]'
-            }`}
-          >
-            01 / System Index
-          </button>
-
-          <button
-            onClick={() => {
-              setCurrentView('collection');
-              onClose();
-            }}
-            className={`text-left font-display text-2xl uppercase py-3 px-4 border-l-2 transition-all ${
-              currentView === 'collection'
-                ? 'border-white text-white bg-[#1f1f1f]'
-                : 'border-transparent text-[#8e9192] hover:text-white hover:border-[#3a3a3a]'
-            }`}
-          >
-            02 / Collections
-          </button>
-
-          <div className="pl-6 flex flex-col gap-2 py-2 font-mono-tech text-xs text-[#8e9192]">
-            <button
-              onClick={() => {
-                onSelectCategory('ALL');
-                setCurrentView('collection');
-                onClose();
-              }}
-              className="text-left hover:text-white transition-colors py-1 flex items-center justify-between"
-            >
-              <span>— ALL 4 COLLECTIONS</span>
-              <span className="text-[10px] text-white bg-[#2a2a2a] px-1.5 py-0.5">[4]</span>
-            </button>
-            {['HOODIES', 'TEES', 'SHIRTS', 'KNITS'].map((cat) => (
-              <button
-                key={cat}
-                onClick={() => {
-                  onSelectCategory(cat);
-                  setCurrentView('collection');
-                  onClose();
-                }}
-                className="text-left hover:text-white transition-colors py-0.5"
-              >
-                — COLLECTION / {cat}
-              </button>
-            ))}
-          </div>
-
-          <button
-            onClick={() => {
-              setCurrentView('community');
-              onClose();
-            }}
-            className={`text-left font-display text-2xl uppercase py-3 px-4 border-l-2 transition-all ${
-              currentView === 'community'
-                ? 'border-white text-white bg-[#1f1f1f]'
-                : 'border-transparent text-[#8e9192] hover:text-white hover:border-[#3a3a3a]'
-            }`}
-          >
-            03 / Community Archive
-          </button>
-
-          <button
-            onClick={() => {
-              setCurrentView('my-orders');
-              onClose();
-            }}
-            className={`text-left font-display text-2xl uppercase py-3 px-4 border-l-2 transition-all ${
-              currentView === 'my-orders'
-                ? 'border-white text-white bg-[#1f1f1f]'
-                : 'border-transparent text-[#8e9192] hover:text-white hover:border-[#3a3a3a]'
-            }`}
-          >
-            04 / My Orders & Shipments
-          </button>
-
-          {onOpenAccount && (
-            <button
-              onClick={() => {
-                onClose();
-                onOpenAccount();
-              }}
-              className="text-left font-display text-2xl uppercase py-3 px-4 border-l-2 border-transparent text-[#8e9192] hover:text-white hover:border-[#3a3a3a] transition-all"
-            >
-              05 / Rider Identity (Auth)
-            </button>
+  const navLinks = [
+    {
+      label: "System Index",
+      badge: "01",
+      active: currentView === "home",
+      icon: (
+        <IconBrandTabler
+          className={cn(
+            "h-5 w-5 shrink-0 transition-colors",
+            currentView === "home" ? "text-white" : "text-neutral-400 group-hover/sidebar:text-white"
           )}
-        </div>
+        />
+      ),
+      onClick: () => {
+        setCurrentView("home");
+        onClose();
+      },
+    },
+    {
+      label: "Collections Catalog",
+      badge: "02",
+      active: currentView === "collection",
+      icon: (
+        <ShoppingBag
+          className={cn(
+            "h-5 w-5 shrink-0 transition-colors",
+            currentView === "collection" ? "text-white" : "text-neutral-400 group-hover/sidebar:text-white"
+          )}
+        />
+      ),
+      onClick: () => {
+        setCurrentView("collection");
+        onClose();
+      },
+    },
+    {
+      label: "Community Archive",
+      badge: "03",
+      active: currentView === "community",
+      icon: (
+        <Sparkles
+          className={cn(
+            "h-5 w-5 shrink-0 transition-colors",
+            currentView === "community" ? "text-white" : "text-neutral-400 group-hover/sidebar:text-white"
+          )}
+        />
+      ),
+      onClick: () => {
+        setCurrentView("community");
+        onClose();
+      },
+    },
+    {
+      label: "Orders & Telemetry",
+      badge: "04",
+      active: currentView === "my-orders",
+      icon: (
+        <Package
+          className={cn(
+            "h-5 w-5 shrink-0 transition-colors",
+            currentView === "my-orders" ? "text-white" : "text-neutral-400 group-hover/sidebar:text-white"
+          )}
+        />
+      ),
+      onClick: () => {
+        setCurrentView("my-orders");
+        onClose();
+      },
+    },
+    {
+      label: "Rider Identity",
+      badge: user ? "VERIFIED" : "AUTH",
+      active: false,
+      icon: (
+        <IconUserBolt
+          className="h-5 w-5 shrink-0 text-neutral-400 group-hover/sidebar:text-white transition-colors"
+        />
+      ),
+      onClick: () => {
+        onClose();
+        if (onOpenAccount) onOpenAccount();
+      },
+    },
+    {
+      label: "Terminal Settings",
+      badge: "SYS",
+      active: false,
+      icon: (
+        <IconSettings
+          className="h-5 w-5 shrink-0 text-neutral-400 group-hover/sidebar:text-white transition-colors"
+        />
+      ),
+      onClick: () => {
+        onClose();
+        if (onOpenAccount) onOpenAccount();
+      },
+    },
+  ];
 
-        <div className="mt-auto pt-8 border-t border-[#3a3a3a] font-mono-tech text-[10px] text-[#8e9192] flex flex-col gap-2">
-          <div className="flex justify-between">
-            <span>TERMINAL ENCRYPTION</span>
-            <span>256-BIT AES</span>
-          </div>
-          <div className="flex justify-between">
-            <span>NODES CONNECTED</span>
-            <span>12,482</span>
-          </div>
-          <p className="mt-2 text-[#444748]">UNDERGROUNDZ GLOBAL SYNDICATE © 2026</p>
+  const userAvatar = user?.user_metadata?.avatar_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80";
+  const userDisplayName = user?.user_metadata?.full_name || (user?.email ? user.email.split("@")[0].toUpperCase() : "GUEST RIDER #048");
+
+  return (
+    <>
+      <AnimatePresence>
+        <div
+          className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md transition-opacity"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ x: "-100%", opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: "-100%", opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="h-full flex flex-col w-fit max-w-[90vw]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              className={cn(
+                "h-full flex flex-col border-r border-[#27272a] bg-[#0c0c0e] text-white shadow-2xl overflow-hidden select-none"
+              )}
+            >
+              <Sidebar open={open} setOpen={setOpen}>
+                <SidebarBody className="justify-between gap-6 bg-[#0c0c0e] dark:bg-[#0c0c0e] text-white border-r border-[#27272a] h-full">
+                  <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto hide-scrollbar">
+                    {/* Header Logo */}
+                    <div className="flex items-center justify-between pb-4 border-b border-[#202024] mb-4">
+                      {open ? (
+                        <Logo onClose={onClose} />
+                      ) : (
+                        <div className="w-full flex justify-center">
+                          <LogoIcon />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Telemetry Status badge */}
+                    {open && (
+                      <div className="mb-3 px-3 py-2 rounded bg-[#131316] border border-[#202026] flex items-center justify-between text-[10px] font-mono text-[#888]">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-[#00ff88] animate-pulse" />
+                          <span className="text-[#bbb]">STATUS: ONLINE</span>
+                        </div>
+                        <span className="text-[#666]">AES-256</span>
+                      </div>
+                    )}
+
+                    {/* 5s Animated Manifesto Broadcast in Sidebar */}
+                    {open && (
+                      <div className="mb-4 p-2.5 rounded bg-[#121217] border border-[#23232c] overflow-hidden relative select-none">
+                        <div className="flex items-center justify-between text-[9px] font-mono text-[#777] mb-1">
+                          <span className="text-[#00ff88] flex items-center gap-1 font-semibold">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#00ff88] animate-pulse" />
+                            RIDER TRANSMISSION
+                          </span>
+                          <span>[0{manifestoIdx + 1}/05]</span>
+                        </div>
+                        <div className="min-h-[38px] flex items-center">
+                          <AnimatePresence mode="wait">
+                            <motion.p
+                              key={manifestoIdx}
+                              initial={{ opacity: 0, y: 4, filter: "blur(6px)" }}
+                              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                              exit={{ opacity: 0, y: -4, filter: "blur(6px)" }}
+                              transition={{ duration: 0.9, ease: [0.25, 0.1, 0.25, 1.0] }}
+                              className="font-manifesto text-xs text-white uppercase font-bold leading-tight"
+                            >
+                              "{RIDER_MANIFESTO_LINES[manifestoIdx]}"
+                            </motion.p>
+                          </AnimatePresence>
+                        </div>
+                        <div className="w-full h-0.5 bg-white/10 mt-1.5 overflow-hidden">
+                          <motion.div
+                            key={manifestoIdx}
+                            initial={{ width: "0%" }}
+                            animate={{ width: "100%" }}
+                            transition={{ duration: 5, ease: "linear" }}
+                            className="h-full bg-white/80"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Navigation Links using SidebarLink */}
+                    <div className="flex flex-col gap-1">
+                      {navLinks.map((link, idx) => (
+                        <SidebarLink
+                          key={idx}
+                          link={link}
+                          className={cn(
+                            "hover:bg-[#18181c] text-neutral-300 hover:text-white transition-all",
+                            link.active && "bg-[#18181c] text-white border-l-2 border-white pl-2"
+                          )}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Category Quick Filter Sub-menu */}
+                    {open && (
+                      <div className="mt-5 pt-4 border-t border-[#1e1e24] px-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[10px] font-mono uppercase tracking-wider text-[#777]">
+                            COLLECTION SUB-INDEX
+                          </span>
+                          <span className="text-[9px] font-mono text-[#555]">[4 TIERS]</span>
+                        </div>
+                        <div className="flex flex-col gap-1 font-mono text-xs">
+                          {["ALL", "HOODIES", "TEES", "SHIRTS", "KNITS"].map((cat) => (
+                            <button
+                              key={cat}
+                              onClick={() => {
+                                onSelectCategory(cat);
+                                setCurrentView("collection");
+                                onClose();
+                              }}
+                              className="text-left px-2.5 py-1.5 rounded text-neutral-400 hover:text-white hover:bg-[#16161a] transition-colors flex items-center justify-between cursor-pointer group"
+                            >
+                              <span className="group-hover:translate-x-1 transition-transform">
+                                — {cat}
+                              </span>
+                              <span className="text-[10px] text-[#555] group-hover:text-white">
+                                ↗
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Aceternity Demo Preview Trigger */}
+                    {open && (
+                      <div className="mt-4 pt-3 border-t border-[#1e1e24] px-1">
+                        <button
+                          onClick={() => setShowDemoModal(true)}
+                          className="w-full flex items-center justify-between p-2 rounded bg-[#131318] hover:bg-[#1b1b22] border border-[#272732] text-xs font-mono text-neutral-300 hover:text-white transition-colors cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Layers className="w-3.5 h-3.5 text-[#00ff88]" />
+                            <span>ACETERNITY SIDEBAR DEMO</span>
+                          </div>
+                          <span className="text-[10px] text-[#888]">VIEW</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Bottom Footer User Profile Section */}
+                  <div className="pt-4 border-t border-[#202024] flex flex-col gap-2">
+                    <SidebarLink
+                      link={{
+                        label: userDisplayName,
+                        href: "#",
+                        icon: (
+                          <img
+                            src={userAvatar}
+                            className="h-7 w-7 shrink-0 rounded-full object-cover border border-[#444]"
+                            width={50}
+                            height={50}
+                            alt="User Avatar"
+                          />
+                        ),
+                        onClick: () => {
+                          onClose();
+                          if (onOpenAccount) onOpenAccount();
+                        },
+                      }}
+                      className="hover:bg-[#18181c]"
+                    />
+
+                    {user && open && (
+                      <button
+                        onClick={handleSignOut}
+                        className="w-full mt-1 px-3 py-1.5 rounded text-left font-mono text-xs text-red-400/80 hover:text-red-400 hover:bg-red-500/10 flex items-center gap-2 transition-colors cursor-pointer"
+                      >
+                        <IconArrowLeft className="w-4 h-4" />
+                        <span>DISCONNECT SESSION</span>
+                      </button>
+                    )}
+
+                    {open && (
+                      <div className="px-2 pt-2 text-[9px] font-mono text-[#555] flex justify-between items-center">
+                        <span>UNDERGROUNDZ SYNDICATE</span>
+                        <span>v2.4.0</span>
+                      </div>
+                    )}
+                  </div>
+                </SidebarBody>
+              </Sidebar>
+            </div>
+          </motion.div>
         </div>
-      </aside>
+      </AnimatePresence>
+
+      {/* Standalone Sidebar Demo Modal */}
+      {showDemoModal && (
+        <div className="fixed inset-0 z-[150] bg-black/90 backdrop-blur-lg flex items-center justify-center p-4">
+          <div className="w-full max-w-5xl bg-[#111114] border border-[#333] rounded-xl overflow-hidden shadow-2xl relative">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#222] bg-[#16161b]">
+              <div className="flex items-center gap-2">
+                <Layers className="w-4 h-4 text-[#00ff88]" />
+                <span className="font-mono text-xs text-white uppercase tracking-wider font-bold">
+                  Aceternity UI Sidebar Demo
+                </span>
+              </div>
+              <button
+                onClick={() => setShowDemoModal(false)}
+                className="text-neutral-400 hover:text-white p-1 cursor-pointer transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <SidebarDemo />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+export const Logo = ({ onClose }: { onClose?: () => void }) => {
+  return (
+    <div className="relative z-20 flex items-center justify-between py-1 text-sm font-normal text-white w-full">
+      <div className="flex items-center space-x-2.5">
+        <div className="h-5 w-6 shrink-0 rounded-tl-lg rounded-tr-sm rounded-br-lg rounded-bl-sm bg-white shadow-[0_0_10px_rgba(255,255,255,0.3)]" />
+        <motion.span
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="font-display font-extrabold tracking-wider whitespace-pre text-white text-base"
+        >
+          UNDERGROUNDZ
+        </motion.span>
+      </div>
+      {onClose && (
+        <button
+          onClick={onClose}
+          className="text-neutral-400 hover:text-white p-1 transition-colors cursor-pointer"
+          title="Close Navigation"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      )}
+    </div>
+  );
+};
+
+export const LogoIcon = () => {
+  return (
+    <div className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-white">
+      <div className="h-5 w-6 shrink-0 rounded-tl-lg rounded-tr-sm rounded-br-lg rounded-bl-sm bg-white shadow-[0_0_10px_rgba(255,255,255,0.3)]" />
     </div>
   );
 };
