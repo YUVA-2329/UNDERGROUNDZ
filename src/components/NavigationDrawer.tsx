@@ -7,6 +7,7 @@ interface NavigationDrawerProps {
   currentView: ViewType;
   setCurrentView: (view: ViewType) => void;
   onSelectCategory: (category: string) => void;
+  onOpenAccount?: () => void;
 }
 
 export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
@@ -15,6 +16,7 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
   currentView,
   setCurrentView,
   onSelectCategory,
+  onOpenAccount,
 }) => {
   if (!isOpen) return null;
 
@@ -104,7 +106,31 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
             03 / Community Archive
           </button>
 
+          <button
+            onClick={() => {
+              setCurrentView('my-orders');
+              onClose();
+            }}
+            className={`text-left font-display text-2xl uppercase py-3 px-4 border-l-2 transition-all ${
+              currentView === 'my-orders'
+                ? 'border-white text-white bg-[#1f1f1f]'
+                : 'border-transparent text-[#8e9192] hover:text-white hover:border-[#3a3a3a]'
+            }`}
+          >
+            04 / My Orders & Shipments
+          </button>
 
+          {onOpenAccount && (
+            <button
+              onClick={() => {
+                onClose();
+                onOpenAccount();
+              }}
+              className="text-left font-display text-2xl uppercase py-3 px-4 border-l-2 border-transparent text-[#8e9192] hover:text-white hover:border-[#3a3a3a] transition-all"
+            >
+              05 / Rider Identity (Auth)
+            </button>
+          )}
         </div>
 
         <div className="mt-auto pt-8 border-t border-[#3a3a3a] font-mono-tech text-[10px] text-[#8e9192] flex flex-col gap-2">

@@ -1,5 +1,6 @@
 import React from 'react';
 import { ViewType } from '../types';
+import { Home, Search, Layers, Users, Package } from 'lucide-react';
 
 interface BottomNavBarProps {
   currentView: ViewType;
@@ -13,45 +14,53 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
   onOpenSearch,
 }) => {
   return (
-    <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 h-20 bg-[#131313] dark:bg-[#0e0e0e] border-t border-[#444748] md:hidden">
+    <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 h-16 bg-[#0a0a0c]/95 backdrop-blur-lg border-t border-[#222] md:hidden">
       <button
         onClick={() => setCurrentView('home')}
-        className={`flex flex-col items-center justify-center pt-2 transition-all duration-200 cursor-pointer ${
-          currentView === 'home'
-            ? 'text-white border-t-2 border-white -mt-[2px]'
-            : 'text-[#8e9192] hover:text-white'
+        className={`flex flex-col items-center justify-center p-2 transition-all cursor-pointer ${
+          currentView === 'home' ? 'text-white' : 'text-[#777] hover:text-white'
         }`}
+        title="Home"
       >
-        <span className="material-symbols-outlined">home_max</span>
+        <Home className="w-5 h-5" />
       </button>
 
       <button
         onClick={onOpenSearch}
-        className="flex flex-col items-center justify-center text-[#8e9192] hover:text-white pt-2 transition-all cursor-pointer"
+        className="flex flex-col items-center justify-center text-[#777] hover:text-white p-2 transition-all cursor-pointer"
+        title="Search"
       >
-        <span className="material-symbols-outlined">search</span>
+        <Search className="w-5 h-5" />
       </button>
 
       <button
         onClick={() => setCurrentView('collection')}
-        className={`flex flex-col items-center justify-center pt-2 transition-all duration-200 cursor-pointer ${
-          currentView === 'collection'
-            ? 'text-white border-t-2 border-white -mt-[2px]'
-            : 'text-[#8e9192] hover:text-white'
+        className={`flex flex-col items-center justify-center p-2 transition-all cursor-pointer ${
+          currentView === 'collection' ? 'text-white' : 'text-[#777] hover:text-white'
         }`}
+        title="Collections"
       >
-        <span className="material-symbols-outlined">layers</span>
+        <Layers className="w-5 h-5" />
       </button>
 
       <button
         onClick={() => setCurrentView('community')}
-        className={`flex flex-col items-center justify-center pt-2 transition-all duration-200 cursor-pointer ${
-          currentView === 'community'
-            ? 'text-white border-t-2 border-white -mt-[2px]'
-            : 'text-[#8e9192] hover:text-white'
+        className={`flex flex-col items-center justify-center p-2 transition-all cursor-pointer ${
+          currentView === 'community' ? 'text-white' : 'text-[#777] hover:text-white'
         }`}
+        title="Community"
       >
-        <span className="material-symbols-outlined">person</span>
+        <Users className="w-5 h-5" />
+      </button>
+
+      <button
+        onClick={() => setCurrentView('my-orders')}
+        className={`flex flex-col items-center justify-center p-2 transition-all cursor-pointer ${
+          currentView === 'my-orders' ? 'text-white' : 'text-[#777] hover:text-white'
+        }`}
+        title="Orders"
+      >
+        <Package className="w-5 h-5" />
       </button>
     </nav>
   );

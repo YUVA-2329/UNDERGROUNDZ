@@ -8,6 +8,7 @@ interface CartDrawerProps {
   onUpdateQuantity: (productId: string, size: string, delta: number) => void;
   onRemoveItem: (productId: string, size: string) => void;
   onClearCart: () => void;
+  onProceedToCheckout?: () => void;
 }
 
 export const CartDrawer: React.FC<CartDrawerProps> = ({
@@ -17,9 +18,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   onUpdateQuantity,
   onRemoveItem,
   onClearCart,
+  onProceedToCheckout,
 }) => {
-  const [isCheckedOut, setIsCheckedOut] = useState(false);
-
   if (!isOpen) return null;
 
   const totalPrice = cart.reduce(
@@ -28,12 +28,10 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   );
 
   const handleCheckout = () => {
-    setIsCheckedOut(true);
-    setTimeout(() => {
-      onClearCart();
-      setIsCheckedOut(false);
-      onClose();
-    }, 3000);
+    onClose();
+    if (onProceedToCheckout) {
+      onProceedToCheckout();
+    }
   };
 
   return (
@@ -53,16 +51,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             </button>
           </div>
 
-          {isCheckedOut ? (
-            <div className="p-8 brutalist-border bg-[#1f1f1f] text-center my-12 animate-fade-in">
-              <span className="material-symbols-outlined text-5xl text-emerald-400 mb-4 animate-pulse">check_circle</span>
-              <h3 className="font-display text-xl uppercase font-bold text-white mb-2">GEAR DEPLOYED</h3>
-              <p className="font-mono-tech text-xs text-[#c4c7c8] mb-4">
-                TRANSACTION ENCRYPTED & LOGGED. DISPATCH PROTOCOL INITIATED.
-              </p>
-              <span className="font-mono-tech text-[10px] text-emerald-400">TRACKING_ID: UGZ-{Math.floor(Math.random() * 89999 + 10000)}</span>
-            </div>
-          ) : cart.length === 0 ? (
+          {cart.length === 0 ? (
             <div className="py-20 text-center flex flex-col items-center">
               <span className="material-symbols-outlined text-5xl text-[#444748] mb-4">inventory_2</span>
               <p className="font-mono-tech text-sm text-[#8e9192] uppercase tracking-wider mb-2">GEAR BAY EMPTY</p>
@@ -72,7 +61,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 hide-scrollbar">
               {cart.map((item) => (
                 <div
-                  key={`${item.product.id}-${item.size}`}
+                  key={`${item.product.id}-${item.size}-${item.color}`}
                   className="p-4 brutalist-border bg-[#1b1b1b] flex gap-4 items-center relative group"
                 >
                   <img
@@ -90,7 +79,9 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                     <h4 className="font-display text-sm font-bold uppercase text-white mb-1">
                       {item.product.name}
                     </h4>
-                    <p className="font-mono-tech text-[10px] text-[#8e9192] mb-3">SIZE: {item.size}</p>
+                    <p className="font-mono-tech text-[10px] text-[#8e9192] mb-3">
+                      SIZE: {item.size} {item.color ? `| COLOR: ${item.color}` : ''}
+                    </p>
 
                     <div className="flex items-center gap-3">
                       <div className="flex items-center border border-[#3a3a3a] bg-[#131313]">
@@ -123,7 +114,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
           )}
         </div>
 
-        {cart.length > 0 && !isCheckedOut && (
+        {cart.length > 0 && (
           <div className="border-t border-[#3a3a3a] pt-6 mt-6">
             <div className="flex justify-between items-center mb-2 font-mono-tech text-xs text-[#8e9192]">
               <span>SHIPPING PROTOCOL</span>
@@ -131,14 +122,15 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             </div>
             <div className="flex justify-between items-center mb-6">
               <span className="font-mono-tech text-sm uppercase text-white font-bold">TOTAL GEAR VALUE</span>
-              <span className="font-display text-2xl font-extrabold text-white">€{totalPrice.toFixed(2)}</span>
+              <span className="font-display text-2xl font-extrabold text-white">${totalPrice.toFixed(2)}</span>
             </div>
 
             <button
+              id="btn-initiate-checkout-drawer"
               onClick={handleCheckout}
               className="w-full py-5 bg-white text-black font-display font-bold text-sm uppercase tracking-wider hover:bg-[#c6c6c7] transition-colors active:scale-98 cursor-pointer flex items-center justify-center gap-2"
             >
-              <span>INITIATE ENCRYPTED CHECKOUT</span>
+              <span>PROCEED TO ENCRYPTED CHECKOUT</span>
               <span className="material-symbols-outlined text-lg">lock</span>
             </button>
           </div>
