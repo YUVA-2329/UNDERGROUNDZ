@@ -1,0 +1,6 @@
+{
+  "name": "UNDERGROUNDZ",
+  "description": "Industrial brutalist technical apparel system and community rider network",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

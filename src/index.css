@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-surface: #131313;
+    --bg-surface-low: #1b1b1b;
+    --bg-surface-container: #1f1f1f;
+    --bg-surface-high: #2a2a2a;
+    --bg-surface-highest: #353535;
+    --bg-surface-lowest: #0e0e0e;
+    --border-outline: #8e9192;
+    --border-variant: #444748;
+    --border-brutalist: #3a3a3a;
+    --text-primary: #ffffff;
+    --text-on-surface: #e2e2e2;
+    --text-muted: #c4c7c8;
+  }
+
+  body {
+    background-color: var(--bg-surface);
+    color: var(--text-on-surface);
+    font-family: 'Geist', sans-serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+.font-mono-tech {
+  font-family: 'Space Mono', monospace;
+}
+
+.font-display {
+  font-family: 'Inter', sans-serif;
+}
+
+.font-body {
+  font-family: 'Geist', sans-serif;
+}
+
+/* Material symbols */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.brutalist-border {
+  border: 1px solid #3a3a3a;
+}
+
+.technical-grid {
+  background-size: 40px 40px;
+  background-image: linear-gradient(to right, rgba(58, 58, 58, 0.15) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(58, 58, 58, 0.15) 1px, transparent 1px);
+}
+
+.scrolling-logs {
+  animation: scrollLogs 25s linear infinite;
+}
+
+@keyframes scrollLogs {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+
+/* Hide scrollbar */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+.industrial-overlay {
+  background: linear-gradient(0deg, rgba(19,19,19,1) 0%, rgba(19,19,19,0) 100%);
+}
+
+.vignette-overlay {
+  background: radial-gradient(circle, transparent 0%, rgba(19,19,19,0.85) 100%);
+}
+
