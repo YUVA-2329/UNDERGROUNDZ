@@ -30,6 +30,12 @@ import {
   fetchUserProfile,
   upsertUserProfile,
 } from './lib/supabase';
+import {
+  notifySuccessfulLogin,
+  notifyNewUserRegistration,
+  notifyNewOrder,
+  notifySystemError,
+} from './services/telegramNotifications';
 import type { User } from '@supabase/supabase-js';
 
 export default function App() {
@@ -97,6 +103,13 @@ export default function App() {
             fullName: user.user_metadata?.full_name || user.user_metadata?.name || '',
             avatarUrl: user.user_metadata?.avatar_url || user.user_metadata?.picture || '',
             role: 'MEMBER_VERIFIED',
+          });
+          // Dispatch Telegram notification for newly registered rider
+          notifyNewUserRegistration({
+            id: user.id,
+            email: user.email || '',
+            name: user.user_metadata?.full_name || user.user_metadata?.name || 'New Rider Member',
+            authProvider: user.app_metadata?.provider || 'Supabase Auth',
           });
         }
       });
@@ -188,9 +201,32 @@ export default function App() {
             setUser(session?.user || null);
             break;
 
-          case 'SIGNED_IN':
+          case 'SIGNED_IN': {
             setUser(session?.user || null);
             setIsAccountOpen(false);
+            
+            // Strict check: only dispatch when genuinely initiated by user (explicit login action)
+            // Strictly avoids triggering on: page refresh, session refresh, existing session, or failed login
+            const explicitLoginFlag = typeof window !== 'undefined' ? sessionStorage.getItem('undergroundz_explicit_login_flag') : null;
+            const isRecentLogin = explicitLoginFlag ? (Date.now() - Number(explicitLoginFlag) < 120000) : false;
+            const alreadyNotified = typeof window !== 'undefined' && sessionStorage.getItem('undergroundz_active_session_notified') === session?.user?.id;
+
+            if (session?.user && isRecentLogin && !alreadyNotified) {
+              if (typeof window !== 'undefined') {
+                sessionStorage.removeItem('undergroundz_explicit_login_flag');
+                sessionStorage.setItem('undergroundz_active_session_notified', session.user.id);
+              }
+              notifySuccessfulLogin({
+                id: session.user.id,
+                email: session.user.email,
+                callsign:
+                  session.user.user_metadata?.full_name ||
+                  session.user.user_metadata?.name ||
+                  'Verified Rider',
+                authProvider: session.user.app_metadata?.provider || 'Supabase Auth',
+              }).catch(() => {});
+            }
+
             // Restore return view
             if (typeof window !== 'undefined') {
               const savedView = sessionStorage.getItem('undergroundz_auth_return_view');
@@ -200,9 +236,14 @@ export default function App() {
               }
             }
             break;
+          }
 
           case 'SIGNED_OUT':
             setUser(null);
+            if (typeof window !== 'undefined') {
+              sessionStorage.removeItem('undergroundz_active_session_notified');
+              sessionStorage.removeItem('undergroundz_explicit_login_flag');
+            }
             break;
 
           default:
@@ -323,6 +364,7 @@ export default function App() {
 
   const handleOrderSuccess = (order: Order) => {
     setCompletedOrder(order);
+    notifyNewOrder(order);
   };
 
   return (

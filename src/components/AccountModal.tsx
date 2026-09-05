@@ -25,6 +25,7 @@ import {
 import type { User } from '@supabase/supabase-js';
 import { ViewType } from '../types';
 import { HoverBorderGradient } from './ui/hover-border-gradient';
+import { notifyNewUserRegistration, notifyRiderRegistration } from '../services/telegramNotifications';
 
 interface AccountModalProps {
   isOpen: boolean;
@@ -98,6 +99,18 @@ export const AccountModal: React.FC<AccountModalProps> = ({
           country: 'India',
         },
       });
+
+      // Dispatch Rider Registration Telegram notification
+      notifyRiderRegistration({
+        userId: user.id,
+        callsign: profileCallsign || user.user_metadata?.callsign || profileName || 'VERIFIED_RIDER',
+        name: profileName || user.user_metadata?.full_name || 'Rider Member',
+        email: user.email || '',
+        sector: profileSector || 'GLOBAL_GRID',
+        phone: profilePhone,
+        source: 'Account Profile Dossier',
+      }).catch(() => {});
+
       setProfileSavedSuccess(true);
       setTimeout(() => setProfileSavedSuccess(false), 3000);
       setIsEditingProfile(false);
@@ -129,6 +142,9 @@ export const AccountModal: React.FC<AccountModalProps> = ({
     setPopupBlockedUrl(null);
 
     try {
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('undergroundz_explicit_login_flag', Date.now().toString());
+      }
       const savedReturn =
         typeof window !== 'undefined'
           ? sessionStorage.getItem('undergroundz_auth_return_view') || undefined
@@ -176,6 +192,9 @@ export const AccountModal: React.FC<AccountModalProps> = ({
           : undefined;
 
       if (authMode === 'signin') {
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('undergroundz_explicit_login_flag', Date.now().toString());
+        }
         const { error } = await signInWithEmail(email, password, savedReturn);
         if (error) {
           setAuthError(error.message);
@@ -195,6 +214,14 @@ export const AccountModal: React.FC<AccountModalProps> = ({
         if (error) {
           setAuthError(error.message);
         } else {
+          // Notify via Telegram
+          notifyNewUserRegistration({
+            id: data?.user?.id,
+            email: email.trim(),
+            name: fullName?.trim() || 'New Member',
+            authProvider: 'Email/Password',
+          }).catch(() => {});
+
           if (data?.session) {
             setSuccessMessage('ACCOUNT CREATED // LOGGED IN');
             setTimeout(() => {

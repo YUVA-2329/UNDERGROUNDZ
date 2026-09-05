@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
-import { Order, UserProfile, CommunityPost, ProductReview } from '../types';
+import { Order, OrderStatus, UserProfile, CommunityPost, ProductReview } from '../types';
 import { INITIAL_COMMUNITY_POSTS, PRODUCT_REVIEWS } from '../data';
 
 const supabaseUrl = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL || '').trim();
@@ -639,6 +639,59 @@ export async function saveOrder(order: Order): Promise<{ success: boolean; error
   }
 
   return { success: true };
+}
+
+/**
+ * Update an existing order's status and trigger a Telegram status notification
+ */
+export async function updateOrderStatus(
+  orderId: string,
+  newStatus: OrderStatus | string,
+  options?: { trackingNumber?: string; customerName?: string; customerEmail?: string }
+): Promise<{ success: boolean; oldStatus?: string; error?: string }> {
+  const localOrders = getLocalOrders();
+  let oldStatus = 'CONFIRMED';
+  const targetIndex = localOrders.findIndex((o) => o.order_id === orderId);
+
+  if (targetIndex !== -1) {
+    oldStatus = localOrders[targetIndex].order_status;
+    localOrders[targetIndex].order_status = newStatus as OrderStatus;
+    try {
+      localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(localOrders));
+    } catch {}
+  }
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ order_status: newStatus })
+        .eq('order_id', orderId);
+
+      if (error) {
+        console.warn('[Undergroundz] Supabase order status update notice:', error.message);
+      }
+    } catch (err: any) {
+      console.warn('[Undergroundz] Supabase order update exception:', err?.message);
+    }
+  }
+
+  // Dispatch Telegram Order Status update
+  try {
+    const { notifyOrderStatusChange } = await import('../services/telegramNotifications');
+    await notifyOrderStatusChange({
+      orderId,
+      oldStatus,
+      newStatus,
+      customerName: options?.customerName || (targetIndex !== -1 ? localOrders[targetIndex].customer.fullName : 'Customer'),
+      customerEmail: options?.customerEmail || (targetIndex !== -1 ? localOrders[targetIndex].customer.email : undefined),
+      trackingNumber: options?.trackingNumber || `UGZ-TRACK-${Math.floor(100000 + Math.random() * 900000)}`,
+    });
+  } catch (err) {
+    console.warn('Failed to dispatch order status telegram notification:', err);
+  }
+
+  return { success: true, oldStatus };
 }
 
 /**

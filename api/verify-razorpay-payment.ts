@@ -37,6 +37,23 @@ export default async function handler(req: Request, res: Response) {
       );
 
       if (!isMatch) {
+        // Dispatch Telegram Security Alert for payment tampering attempt
+        try {
+          const botToken = process.env.TELEGRAM_BOT_TOKEN;
+          const chatId = process.env.TELEGRAM_CHAT_ID;
+          if (botToken && chatId) {
+            fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                chat_id: chatId,
+                text: `🚨 <b>SECURITY ALERT: PAYMENT SIGNATURE TAMPERING</b>\n━━━━━━━━━━━━━━━━━━━━\n<b>Order:</b> <code>${razorpay_order_id}</code>\n<b>Payment ID:</b> <code>${razorpay_payment_id}</code>\n<b>Action:</b> Signature verification failed. Possible fraud attempt.\n<b>Timestamp:</b> ${new Date().toUTCString()}`,
+                parse_mode: 'HTML',
+              }),
+            }).catch(() => {});
+          }
+        } catch {}
+
         return res.status(400).json({
           verified: false,
           error: 'Razorpay signature verification failed. Possible tampering detected.',

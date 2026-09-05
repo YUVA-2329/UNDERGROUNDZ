@@ -167,6 +167,9 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
   const handleGoogleLogin = async () => {
     setPaymentError(null);
     try {
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('undergroundz_explicit_login_flag', Date.now().toString());
+      }
       const { error, popupBlocked, url } = await signInWithGoogle({ returnView: 'checkout' });
       if (error) {
         setPaymentError(error.message);

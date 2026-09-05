@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CommunityPost, FieldReport } from '../types';
 import { HoverBorderGradient } from '../components/ui/hover-border-gradient';
+import { notifyRiderRegistration } from '../services/telegramNotifications';
 
 interface CommunityPageProps {
   posts: CommunityPost[];
@@ -31,6 +32,15 @@ export const CommunityPage: React.FC<CommunityPageProps> = ({ posts, onAddPost }
     };
 
     onAddPost(newPost);
+    
+    // Dispatch Rider Registration / Field Log to Telegram
+    notifyRiderRegistration({
+      callsign: callsign.toUpperCase(),
+      sector: sector.toUpperCase() || 'BERLIN_SECTOR_04',
+      gearTagged: gearUsed,
+      source: 'Field Dispatch Transmission',
+    }).catch(() => {});
+
     setSubmittedSuccess(true);
     setTimeout(() => {
       setSubmittedSuccess(false);

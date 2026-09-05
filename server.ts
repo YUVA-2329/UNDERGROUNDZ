@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { createServer as createViteServer } from 'vite';
 import createRazorpayOrderHandler from './api/create-razorpay-order';
 import verifyRazorpayPaymentHandler from './api/verify-razorpay-payment';
+import telegramNotifyHandler from './api/telegram-notify';
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ async function startServer() {
       hasRazorpayKey: Boolean(process.env.RAZORPAY_KEY_ID),
       hasRazorpaySecret: Boolean(process.env.RAZORPAY_KEY_SECRET),
       hasSupabaseUrl: Boolean(process.env.VITE_SUPABASE_URL),
+      hasTelegramToken: Boolean(process.env.TELEGRAM_BOT_TOKEN),
     });
   });
 
@@ -31,6 +33,10 @@ async function startServer() {
 
   app.post('/api/verify-razorpay-payment', (req, res) => {
     verifyRazorpayPaymentHandler(req, res);
+  });
+
+  app.post('/api/telegram-notify', (req, res) => {
+    telegramNotifyHandler(req, res);
   });
 
   // Vite middleware for development

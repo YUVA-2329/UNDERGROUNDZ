@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Order, ViewType } from '../types';
-import { getCurrentUser, fetchUserOrders, signInWithGoogle } from '../lib/supabase';
+import { getCurrentUser, fetchUserOrders, signInWithGoogle, updateOrderStatus } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import { HoverBorderGradient } from '../components/ui/hover-border-gradient';
 import {
@@ -56,6 +56,22 @@ export const MyOrdersPage: React.FC<MyOrdersPageProps> = ({
 
   const toggleExpand = (orderId: string) => {
     setExpandedOrderId((prev) => (prev === orderId ? null : orderId));
+  };
+
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+
+  const handleStatusChange = async (orderId: string, newStatus: string) => {
+    setUpdatingOrderId(orderId);
+    try {
+      await updateOrderStatus(orderId, newStatus);
+      setOrders((prev) =>
+        prev.map((o) => (o.order_id === orderId ? { ...o, order_status: newStatus } : o))
+      );
+    } catch (err) {
+      console.warn('Failed to update status:', err);
+    } finally {
+      setUpdatingOrderId(null);
+    }
   };
 
   const filteredOrders = orders.filter((order) => {
@@ -254,7 +270,7 @@ export const MyOrdersPage: React.FC<MyOrdersPageProps> = ({
                           {isDemoOrder ? 'DEMO CHARGE' : 'TOTAL AMOUNT'}
                         </span>
                         <span className="font-bold text-white text-sm">
-                          ${order.amount.toFixed(2)}
+                          {order.currency || '₹'}{order.amount % 1 === 0 ? order.amount.toLocaleString() : order.amount.toFixed(2)}
                         </span>
                       </div>
 
@@ -366,6 +382,37 @@ export const MyOrdersPage: React.FC<MyOrdersPageProps> = ({
                             </span>
                           </div>
                         </div>
+                      </div>
+
+                      {/* Order Status Transition Controller (Dispatches Telegram Alert) */}
+                      <div className="pt-4 border-t border-[#1a1a20] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#0d0d10] p-3 border border-[#1e1e24]">
+                        <div className="flex flex-wrap items-center gap-2.5">
+                          <span className="text-[10px] text-[#888] uppercase font-mono font-bold">
+                            UPDATE ORDER STATUS:
+                          </span>
+                          <select
+                            value={order.order_status}
+                            disabled={updatingOrderId === order.order_id}
+                            onChange={(e) => handleStatusChange(order.order_id, e.target.value)}
+                            className="bg-[#18181e] border border-[#33333d] text-white text-xs px-2.5 py-1 font-mono focus:outline-none focus:border-[#ff3300] cursor-pointer"
+                          >
+                            <option value="Demo Order Confirmed">Demo Order Confirmed</option>
+                            <option value="Processing in Depot">Processing in Depot</option>
+                            <option value="Dispatched with Courier">Dispatched with Courier</option>
+                            <option value="Out for Delivery">Out for Delivery</option>
+                            <option value="Delivered">Delivered</option>
+                            <option value="Cancelled">Cancelled</option>
+                          </select>
+                        </div>
+                        {updatingOrderId === order.order_id ? (
+                          <span className="text-[10px] text-[#00ff88] font-mono animate-pulse">
+                            Broadcasting Telegram notification...
+                          </span>
+                        ) : (
+                          <span className="text-[9px] text-[#666] font-mono">
+                            Auto-syncs telemetry to Telegram
+                          </span>
+                        )}
                       </div>
                     </div>
                   )}

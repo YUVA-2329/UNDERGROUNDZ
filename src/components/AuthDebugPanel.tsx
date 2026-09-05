@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured, getOAuthRedirectInfo, getCurrentUser } from '../lib/supabase';
+import { sendTelegramTestPing } from '../services/telegramNotifications';
 import type { User } from '@supabase/supabase-js';
-import { ShieldCheck, ChevronDown, ChevronUp, RefreshCw, ExternalLink } from 'lucide-react';
+import { ShieldCheck, ChevronDown, ChevronUp, RefreshCw, ExternalLink, Send, Bot } from 'lucide-react';
 
 interface AuthDebugPanelProps {
   user: User | null;
@@ -17,8 +18,35 @@ export const AuthDebugPanel: React.FC<AuthDebugPanelProps> = ({ user }) => {
     community_posts: 'INITIALIZING',
     product_reviews: 'INITIALIZING',
   });
+  const [telegramStatus, setTelegramStatus] = useState<{
+    state: 'IDLE' | 'SENDING' | 'SUCCESS' | 'ERROR';
+    message?: string;
+  }>({ state: 'IDLE' });
 
   const oauthInfo = getOAuthRedirectInfo();
+
+  const handleTestTelegramPing = async () => {
+    setTelegramStatus({ state: 'SENDING' });
+    try {
+      const res = await sendTelegramTestPing();
+      if (res.success) {
+        setTelegramStatus({
+          state: 'SUCCESS',
+          message: res.message || 'Notification dispatched to bot!',
+        });
+      } else {
+        setTelegramStatus({
+          state: 'ERROR',
+          message: res.error || 'Failed to dispatch notification.',
+        });
+      }
+    } catch (err: any) {
+      setTelegramStatus({
+        state: 'ERROR',
+        message: err?.message || 'Error executing ping.',
+      });
+    }
+  };
 
   const checkDatabaseHealth = async () => {
     if (!supabase) return;
@@ -217,6 +245,43 @@ export const AuthDebugPanel: React.FC<AuthDebugPanelProps> = ({ user }) => {
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Telegram Bot Service (Edge Function) */}
+            <div className="border-t border-[#1c1c22] pt-1.5 flex flex-col gap-1.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Bot className="w-3 h-3 text-[#00ff88]" />
+                  <span className="text-[#aaa] text-[9px] uppercase tracking-wider font-bold">
+                    Telegram Bot Dispatcher:
+                  </span>
+                </div>
+                <button
+                  id="btn-test-telegram-ping"
+                  onClick={handleTestTelegramPing}
+                  disabled={telegramStatus.state === 'SENDING'}
+                  className="flex items-center gap-1 px-1.5 py-0.5 bg-[#1a1a24] hover:bg-[#ff3300] hover:text-white border border-[#333] text-[#00ff88] text-[8px] uppercase tracking-wider font-bold transition-all cursor-pointer disabled:opacity-50"
+                >
+                  <Send className="w-2.5 h-2.5" />
+                  {telegramStatus.state === 'SENDING' ? 'DISPATCHING...' : 'TEST PING'}
+                </button>
+              </div>
+
+              {telegramStatus.message && (
+                <div
+                  className={`p-1 text-[8px] leading-tight border ${
+                    telegramStatus.state === 'SUCCESS'
+                      ? 'bg-[#00ff88]/10 text-[#00ff88] border-[#00ff88]/30'
+                      : 'bg-red-500/10 text-red-400 border-red-500/30'
+                  }`}
+                >
+                  {telegramStatus.message}
+                </div>
+              )}
+
+              <span className="text-[7.5px] text-[#777] leading-tight">
+                Secrets stored in Supabase Vault. Zero client token exposure.
+              </span>
             </div>
           </div>
 

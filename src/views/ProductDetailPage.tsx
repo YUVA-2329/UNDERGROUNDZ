@@ -6,6 +6,7 @@ import { PeopleWearingUndergroundz } from '../components/PeopleWearingUndergroun
 import { Star, Shield, Zap, Check, AlertCircle, ShoppingBag } from 'lucide-react';
 import { HoverBorderGradient } from '../components/ui/hover-border-gradient';
 import { fetchProductReviews, submitProductReview, getCurrentUser } from '../lib/supabase';
+import { notifyProductReview } from '../services/telegramNotifications';
 
 interface ProductDetailPageProps {
   product: ProductItem;
@@ -53,6 +54,18 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     setReviews((prev) => [newReview, ...prev.filter((r) => r.id !== newReview.id)].slice(0, 5));
     const user = await getCurrentUser();
     await submitProductReview(newReview, user?.id);
+
+    // Dispatch Telegram notification for new product review
+    notifyProductReview({
+      productId: product.id,
+      productName: product.name,
+      rating: newReview.rating,
+      reviewText: newReview.reviewText,
+      userName: newReview.userName,
+      verifiedPurchase: newReview.verifiedPurchase,
+      sizeWorn: newReview.sizeWorn,
+      colorWorn: newReview.colorWorn,
+    }).catch(() => {});
   };
 
   const handleAdd = () => {

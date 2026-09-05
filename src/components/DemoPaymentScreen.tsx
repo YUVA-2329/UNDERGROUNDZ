@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { CartItem, CustomerDetails, Order, ViewType } from '../types';
 import { saveOrder } from '../lib/supabase';
+import { notifyNewOrder, notifyPaymentSuccess } from '../services/telegramNotifications';
 import type { User } from '@supabase/supabase-js';
 import { HoverBorderGradient } from './ui/hover-border-gradient';
 import {
@@ -116,6 +117,18 @@ export const DemoPaymentScreen: React.FC<DemoPaymentScreenProps> = ({
     try {
       // Save order into Supabase and local storage
       await saveOrder(newOrder);
+      // Notify New Order via Telegram
+      notifyNewOrder(newOrder).catch(() => {});
+      // Notify Payment Success via Telegram
+      notifyPaymentSuccess({
+        orderId: newOrder.order_id,
+        paymentId: demoTxnId,
+        amount: newOrder.amount,
+        currency: newOrder.currency,
+        customerName: newOrder.customer.fullName,
+        paymentMethod: 'Undergroundz Sandbox / UPI',
+        isDemo: true,
+      }).catch(() => {});
     } catch (err: any) {
       console.warn('Demo order save warning:', err);
     }
