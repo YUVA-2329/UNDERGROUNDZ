@@ -111,14 +111,14 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
                         {item.product.name}
                       </h4>
                       <p className="text-[10px] text-[#888]">
-                        SIZE: <strong className="text-[#ccc]">{item.size}</strong> | COLOR: <strong className="text-[#ccc]">{item.color || 'VOID BLACK'}</strong>
+                        SIZE: <strong className="text-[#ccc]">{item.size}</strong> | COLOR: <strong className="text-[#ccc]">{item.color || 'NIGHT REFLECTION'}</strong>
                       </p>
                       <p className="text-[10px] text-[#aaa]">
-                        QTY: {item.quantity} × ${item.product.price}
+                        QTY: {item.quantity} × {item.product.currency}{item.product.price}
                       </p>
                     </div>
                     <span className="font-mono text-xs font-bold text-white shrink-0">
-                      ${(item.product.price * item.quantity).toFixed(2)}
+                      {item.product.currency}{((item.product.price * item.quantity) % 1 === 0 ? (item.product.price * item.quantity).toLocaleString() : (item.product.price * item.quantity).toFixed(2))}
                     </span>
                   </div>
                 ))}
@@ -130,7 +130,7 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
                   {isDemoOrder ? 'DEMO SIMULATED CHARGE' : 'TOTAL PAID (INC. TAXES)'}
                 </span>
                 <span className="font-bold text-[#00ff88]">
-                  ${order.amount.toFixed(2)} {order.currency}
+                  {order.currency || '₹'}{order.amount % 1 === 0 ? order.amount.toLocaleString() : order.amount.toFixed(2)}
                 </span>
               </div>
             </div>

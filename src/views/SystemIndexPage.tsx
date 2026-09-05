@@ -120,11 +120,21 @@ export const SystemIndexPage: React.FC<SystemIndexPageProps> = ({
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-5 items-start sm:items-center">
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+              <button
+                id="btn-hero-4k-intro"
+                onClick={() => setCurrentView('intro')}
+                className="flex items-center gap-2.5 px-6 py-3.5 bg-black/90 hover:bg-white/10 border border-white/30 hover:border-white/60 text-white font-mono text-xs uppercase tracking-widest transition-all active:scale-95 cursor-pointer rounded-none group shadow-[0_0_25px_rgba(255,255,255,0.08)]"
+              >
+                <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
+                <span className="font-bold">4K BRAND INTRO</span>
+                <span className="text-[10px] text-white/50 group-hover:text-white transition-colors">[5S]</span>
+              </button>
+
               <HoverBorderGradient
-                containerClassName="rounded-none shadow-[0_4px_24px_rgba(255,255,255,0.15)] active:scale-95 transition-all duration-300"
+                containerClassName="rounded-none shadow-lg active:scale-95 transition-all duration-300"
                 as="button"
-                className="px-10 py-4 bg-white text-black font-display font-bold text-sm uppercase tracking-wider hover:bg-[#d8d8d8] transition-colors"
+                className="px-8 py-3.5 bg-white text-black font-body font-semibold text-xs uppercase tracking-wider hover:bg-[#d8d8d8] transition-colors"
                 onClick={() => {
                   onSelectCategory('HOODIES');
                   setCurrentView('collection');
@@ -136,15 +146,15 @@ export const SystemIndexPage: React.FC<SystemIndexPageProps> = ({
               <HoverBorderGradient
                 containerClassName="rounded-none active:scale-95 transition-all duration-300"
                 as="button"
-                className="px-8 py-4 bg-[#0a0a0e]/90 text-[#e2e4e8] font-display font-bold text-sm uppercase tracking-wider hover:text-white transition-colors"
+                className="px-8 py-3.5 bg-[#0a0a0e]/90 text-[#e2e4e8] font-body font-semibold text-xs uppercase tracking-wider hover:text-white transition-colors"
                 onClick={() => setCurrentView('community')}
               >
                 Rider Community
               </HoverBorderGradient>
 
-              <div className="hidden lg:block h-10 w-[1px] bg-white/20"></div>
+              <div className="hidden lg:block h-8 w-[1px] bg-white/20"></div>
 
-              <p className="max-w-xs font-body text-xs sm:text-sm text-[#a8adb3] leading-relaxed drop-shadow-md">
+              <p className="max-w-xs font-body text-xs text-[#a8adb3] leading-relaxed">
                 Technical brutalist apparel engineered with aerodynamic precision for high-displacement machines.
               </p>
             </div>
@@ -153,53 +163,56 @@ export const SystemIndexPage: React.FC<SystemIndexPageProps> = ({
 
         {/* Bottom Horizon Coordinates Marker */}
         <div className="absolute right-6 bottom-4 hidden xl:block z-20 pointer-events-none">
-          <div className="flex items-center gap-3 font-mono-tech text-[10px] text-[#8e9192]/80 uppercase">
-            <span>CHASSIS TELEMETRY: REAL-TIME</span>
+          <div className="flex items-center gap-3 font-body text-[11px] text-[#8e9192] uppercase font-medium tracking-wider">
+            <span>CHASSIS TELEMETRY: ACTIVE</span>
             <span>•</span>
             <span>CARBON SPEC: MONOCHROME</span>
             <span>•</span>
-            <span className="text-white">4K TITANIUM GRADE</span>
+            <span className="text-white">TITANIUM GRADE</span>
           </div>
         </div>
       </section>
 
-      {/* RIDER MANIFESTO TRANSMISSION BANNER (3s Fade In/Fade Out Broadcast) */}
-      <RiderManifestoBanner variant="banner" />
-
       {/* CORE COLLECTIONS Section (Bento Style) */}
-      <section className="py-24 px-5 md:px-16 bg-[#131313]">
-        <div className="flex justify-between items-end mb-16 border-b border-[#444748] pb-8">
-          <h2 className="font-display text-3xl md:text-5xl uppercase tracking-tighter font-bold">
+      <section className="py-24 px-5 md:px-16 bg-[#0e0e11]">
+        <div className="flex justify-between items-end mb-16 border-b border-[#2a2a34] pb-6">
+          <h2 className="font-display text-4xl md:text-6xl uppercase tracking-tight font-bold text-white">
             CORE COLLECTIONS
           </h2>
-          <span className="font-mono-tech text-xs text-[#8e9192] uppercase">[ 03 CATEGORIES ]</span>
+          <span className="font-body text-xs font-semibold text-[#8e9192] uppercase tracking-wider">[ 03 CATEGORIES ]</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-0 border border-[#444748]">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-0 border border-[#2a2a34]">
           {/* HOODIES */}
           <button
             onClick={() => {
               onSelectCategory('HOODIES');
               setCurrentView('collection');
             }}
-            className="text-left group relative col-span-12 md:col-span-4 h-[480px] border-b md:border-b-0 md:border-r border-[#444748] overflow-hidden cursor-pointer"
+            className="text-left group relative col-span-12 md:col-span-4 h-[480px] border-b md:border-b-0 md:border-r border-[#2a2a34] overflow-hidden cursor-pointer bg-[#0c0c0e]"
           >
-            <div className="absolute inset-0 bg-[#0e0e0e] transition-colors group-hover:bg-[#2a2a2a]">
+            <div className="absolute inset-0 bg-[#0c0c0e] transition-colors group-hover:bg-[#16161c]">
               <img src="/hoodie.png" alt="The Void Hoodie" className="w-full h-full object-cover opacity-60 group-hover:opacity-90 group-hover:scale-105 transition-all duration-700 mix-blend-luminosity hover:mix-blend-normal" />
             </div>
             <div className="relative z-10 p-8 flex flex-col h-full justify-between">
-              <div className="flex justify-between">
-                <span className="font-mono-tech text-xs text-[#8e9192]">ID: 001</span>
+              <div className="flex justify-between items-start">
+                <div className="flex flex-col gap-1">
+                  <span className="font-body text-xs font-semibold text-[#8e9192] tracking-wider">SERIES 001</span>
+                  <span className="inline-flex items-center gap-1.5 font-body text-[10px] text-[#e0a855] font-bold uppercase tracking-wider bg-[#1a1608] border border-[#e0a855]/40 px-2 py-0.5">
+                    <span className="w-1 h-1 rounded-full bg-[#e0a855] animate-pulse" />
+                    OPENING OFFER • ₹1,200
+                  </span>
+                </div>
                 <span className="material-symbols-outlined text-[#8e9192] group-hover:text-white transition-colors">
                   add
                 </span>
               </div>
               <div>
-                <h3 className="font-display text-4xl uppercase tracking-tighter mb-4 font-bold group-hover:translate-x-2 transition-transform">
-                  THE VOID HOODIE
+                <h3 className="font-display text-3xl sm:text-4xl uppercase tracking-tight mb-2 font-bold group-hover:translate-x-1.5 transition-transform text-white">
+                  THE REFLECTION HOODIE
                 </h3>
-                <p className="font-body text-sm text-[#c4c7c8] opacity-0 group-hover:opacity-100 transition-opacity">
-                  A premium black streetwear hoodie featuring a bold UNDERGROUNDZ logo.
+                <p className="font-body text-xs sm:text-sm text-[#b0b0ba] opacity-0 group-hover:opacity-100 transition-opacity">
+                  Engineered for night riders. High-intensity retro-reflective threading woven into heavyweight cotton fleece.
                 </p>
               </div>
             </div>
@@ -211,24 +224,24 @@ export const SystemIndexPage: React.FC<SystemIndexPageProps> = ({
               onSelectCategory('TEES');
               setCurrentView('collection');
             }}
-            className="text-left group relative col-span-12 md:col-span-4 h-[480px] border-b md:border-b-0 md:border-r border-[#444748] overflow-hidden cursor-pointer"
+            className="text-left group relative col-span-12 md:col-span-4 h-[480px] border-b md:border-b-0 md:border-r border-[#2a2a34] overflow-hidden cursor-pointer bg-[#0c0c0e]"
           >
-            <div className="absolute inset-0 bg-[#1b1b1b] transition-colors group-hover:bg-[#2a2a2a]">
+            <div className="absolute inset-0 bg-[#0c0c0e] transition-colors group-hover:bg-[#16161c]">
               <img src="/tshirt.png" alt="The Core T-Shirt" className="w-full h-full object-cover opacity-60 group-hover:opacity-90 group-hover:scale-105 transition-all duration-700 mix-blend-luminosity hover:mix-blend-normal" />
             </div>
             <div className="relative z-10 p-8 flex flex-col h-full justify-between">
               <div className="flex justify-between">
-                <span className="font-mono-tech text-xs text-[#8e9192]">ID: 002</span>
+                <span className="font-body text-xs font-semibold text-[#8e9192] tracking-wider">SERIES 002</span>
                 <span className="material-symbols-outlined text-[#8e9192] group-hover:text-white transition-colors">
                   add
                 </span>
               </div>
               <div>
-                <h3 className="font-display text-4xl uppercase tracking-tighter mb-4 font-bold group-hover:translate-x-2 transition-transform">
+                <h3 className="font-display text-3xl sm:text-4xl uppercase tracking-tight mb-2 font-bold group-hover:translate-x-1.5 transition-transform text-white">
                   THE CORE T-SHIRT
                 </h3>
-                <p className="font-body text-sm text-[#c4c7c8] opacity-0 group-hover:opacity-100 transition-opacity">
-                  Premium oversized black streetwear t-shirt with minimalist details.
+                <p className="font-body text-xs sm:text-sm text-[#b0b0ba] opacity-0 group-hover:opacity-100 transition-opacity">
+                  Oversized heavyweight jersey knit with reinforced stress points.
                 </p>
               </div>
             </div>
@@ -240,24 +253,24 @@ export const SystemIndexPage: React.FC<SystemIndexPageProps> = ({
               onSelectCategory('SHIRTS');
               setCurrentView('collection');
             }}
-            className="text-left group relative col-span-12 md:col-span-4 h-[480px] overflow-hidden cursor-pointer"
+            className="text-left group relative col-span-12 md:col-span-4 h-[480px] overflow-hidden cursor-pointer bg-[#0c0c0e]"
           >
-            <div className="absolute inset-0 bg-[#131313] transition-colors group-hover:bg-[#2a2a2a]">
+            <div className="absolute inset-0 bg-[#0c0c0e] transition-colors group-hover:bg-[#16161c]">
               <img src="/shirt.png" alt="The Tech Shirt" className="w-full h-full object-cover opacity-60 group-hover:opacity-90 group-hover:scale-105 transition-all duration-700 mix-blend-luminosity hover:mix-blend-normal" />
             </div>
             <div className="relative z-10 p-8 flex flex-col h-full justify-between">
               <div className="flex justify-between">
-                <span className="font-mono-tech text-xs text-[#8e9192]">ID: 003</span>
+                <span className="font-body text-xs font-semibold text-[#8e9192] tracking-wider">SERIES 003</span>
                 <span className="material-symbols-outlined text-[#8e9192] group-hover:text-white transition-colors">
                   add
                 </span>
               </div>
               <div>
-                <h3 className="font-display text-4xl uppercase tracking-tighter mb-4 font-bold group-hover:translate-x-2 transition-transform">
+                <h3 className="font-display text-3xl sm:text-4xl uppercase tracking-tight mb-2 font-bold group-hover:translate-x-1.5 transition-transform text-white">
                   THE TECH SHIRT
                 </h3>
-                <p className="font-body text-sm text-[#c4c7c8] opacity-0 group-hover:opacity-100 transition-opacity">
-                  Sleek utilitarian black overshirt with technical fabrics.
+                <p className="font-body text-xs sm:text-sm text-[#b0b0ba] opacity-0 group-hover:opacity-100 transition-opacity">
+                  Sleek utilitarian overshirt built with abrasion-resistant technical ripstop.
                 </p>
               </div>
             </div>
@@ -265,59 +278,57 @@ export const SystemIndexPage: React.FC<SystemIndexPageProps> = ({
         </div>
       </section>
 
-
-
       {/* CTA Section */}
-      <section className="py-32 bg-[#0e0e0e] flex flex-col items-center justify-center text-center px-5 border-t border-b border-[#444748]">
-        <h2 className="font-display text-4xl sm:text-6xl md:text-8xl uppercase tracking-tighter mb-12 font-extrabold text-[#8e9192]/30">
+      <section className="py-28 bg-[#0a0a0c] flex flex-col items-center justify-center text-center px-5 border-t border-b border-[#202026]">
+        <h2 className="font-display text-5xl sm:text-7xl md:text-8xl uppercase tracking-tight mb-8 font-bold text-[#8e9192]/30">
           LEGACY OF THE VOID
         </h2>
         <div className="relative group">
           <HoverBorderGradient
-            containerClassName="rounded-none duration-1000"
+            containerClassName="rounded-none"
             as="button"
-            className="px-12 py-5 bg-[#0a0a0e] text-white font-display font-bold text-sm uppercase transition-all duration-300 hover:text-white"
+            className="px-10 py-4 bg-[#111115] text-white font-body font-semibold text-xs uppercase tracking-wider transition-all duration-300 hover:bg-white hover:text-black"
             onClick={() => setCurrentView('community')}
           >
             ENTER THE ARCHIVE
           </HoverBorderGradient>
-          <div className="absolute -top-2 -left-2 w-4 h-4 border-t border-l border-white pointer-events-none"></div>
-          <div className="absolute -bottom-2 -right-2 w-4 h-4 border-b border-r border-white pointer-events-none"></div>
+          <div className="absolute -top-2 -left-2 w-3 h-3 border-t border-l border-white/40 pointer-events-none"></div>
+          <div className="absolute -bottom-2 -right-2 w-3 h-3 border-b border-r border-white/40 pointer-events-none"></div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-16 px-5 md:px-16 bg-[#131313]">
+      <footer className="py-16 px-5 md:px-16 bg-[#0e0e12]">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-12">
           <div className="col-span-12 md:col-span-4">
-            <img src="/logo.png" alt="UNDERGROUNDZ" className="h-8 mb-4 object-contain block" />
-            <p className="font-body text-sm text-[#c4c7c8] max-w-xs">
-              Industrial brutalism in garment form. Distributed through secret channels only.
+            <img src="/logo.png" alt="UNDERGROUNDZ" className="h-7 mb-4 object-contain block" />
+            <p className="font-body text-xs text-[#9c9ca8] max-w-xs leading-relaxed">
+              Industrial brutalism in garment form. Distributed through verified rider channels only.
             </p>
           </div>
 
           <div className="col-span-6 md:col-span-2">
-            <h5 className="font-mono-tech text-xs text-white uppercase mb-4">SYSTEM</h5>
-            <ul className="space-y-2 font-mono-tech text-[11px] text-[#8e9192] uppercase">
-              <li><button onClick={() => setCurrentView('home')} className="hover:text-white">Logistics</button></li>
-              <li><button onClick={() => setCurrentView('home')} className="hover:text-white">Protocols</button></li>
-              <li><button onClick={() => setCurrentView('community')} className="hover:text-white">Manifesto</button></li>
+            <h5 className="font-body text-xs font-semibold text-white uppercase tracking-wider mb-4">SYSTEM</h5>
+            <ul className="space-y-2.5 font-body text-xs text-[#8e8e98]">
+              <li><button onClick={() => setCurrentView('home')} className="hover:text-white transition-colors">Logistics</button></li>
+              <li><button onClick={() => setCurrentView('home')} className="hover:text-white transition-colors">Protocols</button></li>
+              <li><button onClick={() => setCurrentView('community')} className="hover:text-white transition-colors">Manifesto</button></li>
             </ul>
           </div>
 
           <div className="col-span-6 md:col-span-2">
-            <h5 className="font-mono-tech text-xs text-white uppercase mb-4">CONNECT</h5>
-            <ul className="space-y-2 font-mono-tech text-[11px] text-[#8e9192] uppercase">
-              <li><button onClick={() => setCurrentView('home')} className="hover:text-white">Terminal</button></li>
-              <li><button onClick={() => setCurrentView('community')} className="hover:text-white">Encrypted</button></li>
-              <li><button onClick={() => setCurrentView('community')} className="hover:text-white">Signals</button></li>
+            <h5 className="font-body text-xs font-semibold text-white uppercase tracking-wider mb-4">CONNECT</h5>
+            <ul className="space-y-2.5 font-body text-xs text-[#8e8e98]">
+              <li><button onClick={() => setCurrentView('home')} className="hover:text-white transition-colors">Terminal</button></li>
+              <li><button onClick={() => setCurrentView('community')} className="hover:text-white transition-colors">Encrypted</button></li>
+              <li><button onClick={() => setCurrentView('community')} className="hover:text-white transition-colors">Signals</button></li>
             </ul>
           </div>
 
           <div className="col-span-12 md:col-span-4 flex flex-col md:items-end">
-            <h5 className="font-mono-tech text-xs text-white uppercase mb-2">STATUS: ONLINE</h5>
-            <p className="font-mono-tech text-[10px] text-[#8e9192] text-right">© 2026 UNDERGROUNDZ GLOBAL SYNDICATE</p>
-            <p className="font-mono-tech text-[10px] text-[#8e9192] text-right mt-1">ENCRYPTED AT 256-BIT AES</p>
+            <h5 className="font-body text-xs font-semibold text-white uppercase tracking-wider mb-2">STATUS: ONLINE</h5>
+            <p className="font-body text-xs text-[#8e8e98] text-right">© 2026 UNDERGROUNDZ GLOBAL SYNDICATE</p>
+            <p className="font-body text-[11px] text-[#636370] text-right mt-1">256-BIT ENCRYPTION ACTIVE</p>
           </div>
         </div>
       </footer>

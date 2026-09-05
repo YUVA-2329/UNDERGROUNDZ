@@ -1,122 +1,314 @@
 import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
 import { Order } from '../types';
 
-const DEFAULT_SUPABASE_URL = 'https://myntjfzjfyzyqnlmwsrd.supabase.co';
-const DEFAULT_SUPABASE_ANON_KEY =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15bnRqZnpqZnl6eXFubG13c3JkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg1MjcwNjcsImV4cCI6MjEwNDEwMzA2N30.y00M-47lxwi-cLu4LtuqZB6HaN8nWK0tW0l0E-3QMpE';
-
-const supabaseUrl =
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL) ||
-  DEFAULT_SUPABASE_URL;
-const supabaseAnonKey =
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_ANON_KEY) ||
-  DEFAULT_SUPABASE_ANON_KEY;
+const supabaseUrl = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL || '').trim();
+const supabaseAnonKey = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_ANON_KEY || '').trim();
 
 export const isSupabaseConfigured = Boolean(
-  supabaseUrl && 
-  supabaseAnonKey && 
+  supabaseUrl &&
+  supabaseAnonKey &&
   !supabaseUrl.includes('your-project') &&
   !supabaseUrl.includes('placeholder')
 );
 
-// Fallback user state for testing when Supabase env variables are not yet provided
-const MOCK_USER_STORAGE_KEY = 'undergroundz_mock_auth_user';
 const ORDERS_STORAGE_KEY = 'undergroundz_customer_orders';
 
 export let supabase: SupabaseClient | null = null;
 
 if (isSupabaseConfigured) {
   try {
-    supabase = createClient(supabaseUrl, supabaseAnonKey);
+    supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: 'pkce',
+        storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+      },
+    });
   } catch (err) {
-    console.warn('[Undergroundz] Supabase client initialization error:', err);
+    console.error('[Undergroundz] Supabase client initialization error:', err);
   }
 }
 
 export interface AuthState {
-  user: User | MockUser | null;
+  user: User | null;
   isAuthenticated: boolean;
-  isMock: boolean;
 }
 
-export interface MockUser {
-  id: string;
-  email: string;
-  user_metadata: {
-    full_name?: string;
-    avatar_url?: string;
-    name?: string;
-  };
+export interface OAuthRedirectInfo {
+  redirectUrl: string;
+  isAiStudioDev: boolean;
+  isIframe: boolean;
+  environmentType: 'localhost' | 'ai_studio_dev' | 'ai_studio_shared' | 'production';
+  warning?: string;
 }
 
 /**
- * Sign in with Google OAuth via Supabase
+ * Determine the safe OAuth redirect URL and detect current environment constraints.
  */
-export async function signInWithGoogle(): Promise<{ error: Error | null; url?: string }> {
-  if (isSupabaseConfigured && supabase) {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.origin,
-      },
-    });
-    return { error };
+export function getOAuthRedirectInfo(): OAuthRedirectInfo {
+  if (typeof window === 'undefined') {
+    return {
+      redirectUrl: '',
+      isAiStudioDev: false,
+      isIframe: false,
+      environmentType: 'production',
+    };
   }
 
-  // Fallback / Demo mode when Supabase credentials are pending
-  console.info('[Undergroundz] Supabase credentials not set. Using test Google user session for evaluation.');
-  const mockUser: MockUser = {
-    id: `usr_demo_${Date.now()}`,
-    email: 'rider.alex@undergroundz.com',
-    user_metadata: {
-      full_name: 'Alex Vance',
-      name: 'Alex Vance',
-      avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
-    },
+  const hostname = window.location.hostname;
+  const isIframe = window.self !== window.top;
+  const isAiStudioDev = hostname.startsWith('ais-dev-') && hostname.endsWith('.run.app');
+  const isAiStudioShared = hostname.startsWith('ais-pre-') && hostname.endsWith('.run.app');
+  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+
+  let environmentType: OAuthRedirectInfo['environmentType'] = 'production';
+  if (isLocalhost) {
+    environmentType = 'localhost';
+  } else if (isAiStudioDev) {
+    environmentType = 'ai_studio_dev';
+  } else if (isAiStudioShared) {
+    environmentType = 'ai_studio_shared';
+  }
+
+  // 1. Localhost development
+  if (isLocalhost) {
+    return {
+      redirectUrl: `${window.location.origin}/`,
+      isAiStudioDev: false,
+      isIframe,
+      environmentType,
+    };
+  }
+
+  // 2. Private AI Studio Cloud Run dev URL
+  if (isAiStudioDev) {
+    // Note: Cloud Run IAM blocks direct unauthenticated redirects back to ais-dev-*.run.app with HTTP 403.
+    // The shared app URL (ais-pre-*) is the public Cloud Run ingress endpoint.
+    const sharedOrigin = window.location.origin.replace('ais-dev-', 'ais-pre-');
+    return {
+      redirectUrl: `${sharedOrigin}/`,
+      isAiStudioDev: true,
+      isIframe,
+      environmentType,
+      warning:
+        'Cloud Run IAM blocks direct unauthenticated redirects to ais-dev-*.run.app (403 Forbidden). Popup flow or Email/Password is recommended.',
+    };
+  }
+
+  // 3. Shared preview or Production domain
+  return {
+    redirectUrl: `${window.location.origin}/`,
+    isAiStudioDev: false,
+    isIframe,
+    environmentType,
   };
-  localStorage.setItem(MOCK_USER_STORAGE_KEY, JSON.stringify(mockUser));
-  window.dispatchEvent(new Event('undergroundz-auth-change'));
-  return { error: null };
 }
 
 /**
- * Sign out of current session
+ * Sign in with Google OAuth using Supabase.
+ * Prefers popup flow with skipBrowserRedirect to avoid iframe X-Frame-Options blocking.
+ */
+export async function signInWithGoogle(options?: {
+  returnView?: string;
+  skipPopup?: boolean;
+}): Promise<{
+  error: Error | null;
+  url?: string;
+  popupBlocked?: boolean;
+}> {
+  if (!isSupabaseConfigured || !supabase) {
+    return {
+      error: new Error(
+        'Supabase is not configured. VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are required.'
+      ),
+    };
+  }
+
+  if (options?.returnView && typeof window !== 'undefined') {
+    sessionStorage.setItem('undergroundz_auth_return_view', options.returnView);
+  }
+
+  const { redirectUrl } = getOAuthRedirectInfo();
+
+  try {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: redirectUrl,
+        skipBrowserRedirect: true,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
+      },
+    });
+
+    if (error) {
+      return { error };
+    }
+
+    if (!data?.url) {
+      return { error: new Error('Failed to obtain Google OAuth authorization URL from Supabase.') };
+    }
+
+    if (options?.skipPopup) {
+      return { error: null, url: data.url, popupBlocked: false };
+    }
+
+    // Open popup window centered
+    if (typeof window !== 'undefined') {
+      const width = 540;
+      const height = 660;
+      const left = Math.max(0, (window.screen.width - width) / 2);
+      const top = Math.max(0, (window.screen.height - height) / 2);
+
+      const popup = window.open(
+        data.url,
+        'undergroundz_oauth_popup',
+        `width=${width},height=${height},top=${top},left=${left},status=no,resizable=yes,scrollbars=yes`
+      );
+
+      if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+        return {
+          error: null,
+          url: data.url,
+          popupBlocked: true,
+        };
+      }
+
+      return { error: null, url: data.url, popupBlocked: false };
+    }
+
+    return { error: null, url: data.url };
+  } catch (err: any) {
+    return { error: err instanceof Error ? err : new Error(String(err)) };
+  }
+}
+
+/**
+ * Sign in with Email and Password
+ */
+export async function signInWithEmail(
+  email: string,
+  password: string,
+  returnView?: string
+): Promise<{ data: any; error: Error | null }> {
+  if (!isSupabaseConfigured || !supabase) {
+    return {
+      data: null,
+      error: new Error(
+        'Supabase is not configured. VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are required.'
+      ),
+    };
+  }
+
+  if (returnView && typeof window !== 'undefined') {
+    sessionStorage.setItem('undergroundz_auth_return_view', returnView);
+  }
+
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+
+    if (error) {
+      return { data: null, error };
+    }
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('undergroundz-auth-change'));
+    }
+
+    return { data, error: null };
+  } catch (err: any) {
+    return { data: null, error: err instanceof Error ? err : new Error(String(err)) };
+  }
+}
+
+/**
+ * Sign up with Email and Password
+ */
+export async function signUpWithEmail(
+  email: string,
+  password: string,
+  fullName?: string,
+  returnView?: string
+): Promise<{ data: any; error: Error | null }> {
+  if (!isSupabaseConfigured || !supabase) {
+    return {
+      data: null,
+      error: new Error(
+        'Supabase is not configured. VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are required.'
+      ),
+    };
+  }
+
+  if (returnView && typeof window !== 'undefined') {
+    sessionStorage.setItem('undergroundz_auth_return_view', returnView);
+  }
+
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: {
+        data: {
+          full_name: fullName?.trim() || '',
+          name: fullName?.trim() || '',
+        },
+      },
+    });
+
+    if (error) {
+      return { data: null, error };
+    }
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('undergroundz-auth-change'));
+    }
+
+    return { data, error: null };
+  } catch (err: any) {
+    return { data: null, error: err instanceof Error ? err : new Error(String(err)) };
+  }
+}
+
+/**
+ * Sign out of the current session
  */
 export async function signOut(): Promise<{ error: Error | null }> {
   if (isSupabaseConfigured && supabase) {
-    const { error } = await supabase.auth.signOut();
-    return { error };
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('undergroundz-auth-change'));
+      }
+      return { error };
+    } catch (err: any) {
+      return { error: err instanceof Error ? err : new Error(String(err)) };
+    }
   }
 
-  localStorage.removeItem(MOCK_USER_STORAGE_KEY);
-  window.dispatchEvent(new Event('undergroundz-auth-change'));
   return { error: null };
 }
 
 /**
- * Get the current user (either from Supabase or test session)
+ * Get the current user from Supabase session
  */
-export async function getCurrentUser(): Promise<User | MockUser | null> {
+export async function getCurrentUser(): Promise<User | null> {
   if (isSupabaseConfigured && supabase) {
     try {
       const { data, error } = await supabase.auth.getUser();
-      if (!error && data.user) {
+      if (!error && data?.user) {
         return data.user;
       }
     } catch (e) {
-      console.warn('Failed to fetch user from Supabase:', e);
+      console.warn('[Undergroundz Auth] Failed to retrieve current user:', e);
     }
   }
-
-  const stored = localStorage.getItem(MOCK_USER_STORAGE_KEY);
-  if (stored) {
-    try {
-      return JSON.parse(stored);
-    } catch {
-      return null;
-    }
-  }
-
   return null;
 }
 
@@ -188,7 +380,7 @@ export async function fetchUserOrders(userId?: string, email?: string): Promise<
           user_id: d.user_id,
           items: d.items,
           amount: Number(d.amount),
-          currency: d.currency || '$',
+          currency: d.currency || '₹',
           customer: typeof d.shipping_address === 'object' ? d.shipping_address : {
             fullName: d.customer_name || '',
             email: d.email || '',

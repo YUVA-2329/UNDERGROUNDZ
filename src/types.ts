@@ -1,4 +1,4 @@
-export type ViewType = 'home' | 'collection' | 'product' | 'community' | 'checkout' | 'order-confirmation' | 'my-orders';
+export type ViewType = 'home' | 'collection' | 'product' | 'community' | 'checkout' | 'order-confirmation' | 'my-orders' | 'intro';
 
 export interface ProductSpec {
   waterproof: string;
@@ -25,6 +25,7 @@ export interface ProductItem {
   category: string;
   price: number;
   originalPrice?: number;
+  openingOffer?: boolean;
   currency: string;
   description: string;
   longDescription: string;

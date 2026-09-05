@@ -50,39 +50,39 @@ export const CollectionVoidPage: React.FC<CollectionVoidPageProps> = ({
         <div className="relative z-10 px-5 md:px-16 mb-12">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
             <div className="max-w-2xl">
-              <span className="font-mono-tech text-xs text-white mb-2 tracking-[0.25em] uppercase block">
+              <span className="font-body text-xs text-[#9c9ca8] mb-2 tracking-widest uppercase block font-semibold">
                 SYSTEM CATALOG // 4 EXCLUSIVE COLLECTIONS
               </span>
-              <h2 className="font-display text-4xl sm:text-6xl md:text-7xl uppercase mb-4 leading-none font-extrabold text-white">
+              <h2 className="font-display text-5xl sm:text-7xl md:text-8xl uppercase mb-3 leading-none font-bold text-white tracking-tight">
                 {selectedCategory === 'ALL' ? 'ALL 4 COLLECTIONS' : `COLLECTION / ${selectedCategory}`}
               </h2>
-              <p className="font-body text-sm md:text-base text-[#c4c7c8] max-w-xl">
-                Every piece features an athletic man or woman wearing engineered technical apparel, stamped with authentic <span className="text-white font-bold underline decoration-white">UNDERGROUNDZ</span> high-contrast chest and back branding.
+              <p className="font-body text-sm md:text-base text-[#b0b0ba] max-w-xl leading-relaxed">
+                Engineered technical apparel engineered for riders and urban operators, stamped with authentic <span className="text-white font-semibold underline decoration-white">UNDERGROUNDZ</span> high-contrast insignia.
               </p>
             </div>
-            <div className="hidden md:flex flex-col items-end gap-1 text-right font-mono-tech">
-              <span className="text-[10px] text-[#8e9192] uppercase">UNITS LOADED</span>
-              <span className="text-sm font-bold text-white">[ {filteredProducts.length} / 15 COLLECTIONS ]</span>
+            <div className="hidden md:flex flex-col items-end gap-1 text-right font-body">
+              <span className="text-[11px] text-[#8e9192] uppercase tracking-wider font-medium">UNITS LOADED</span>
+              <span className="text-sm font-semibold text-white tracking-wider">[ {filteredProducts.length} / 15 COLLECTIONS ]</span>
             </div>
           </div>
         </div>
       </section>
 
       {/* Category Filter Bar */}
-      <section className="px-5 md:px-16 py-6 bg-[#1b1b1b] border-y border-[#444748] sticky top-16 z-40 backdrop-blur-md bg-[#1b1b1b]/95">
+      <section className="px-5 md:px-16 py-5 bg-[#121216] border-y border-[#25252e] sticky top-16 z-40 backdrop-blur-md bg-[#121216]/95">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 hide-scrollbar">
-            <span className="font-mono-tech text-[10px] text-[#8e9192] uppercase pr-2 whitespace-nowrap">
+            <span className="font-body text-[11px] font-semibold text-[#8e8e98] uppercase pr-2 whitespace-nowrap tracking-wider">
               CATEGORIES:
             </span>
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 font-mono-tech text-xs uppercase tracking-wider border transition-all cursor-pointer whitespace-nowrap ${
+                className={`px-3.5 py-1.5 font-body text-xs uppercase tracking-wider border transition-all cursor-pointer whitespace-nowrap ${
                   selectedCategory === cat
-                    ? 'bg-white text-black border-white font-bold'
-                    : 'bg-[#131313] text-[#8e9192] border-[#3a3a3a] hover:text-white hover:border-[#8e9192]'
+                    ? 'bg-white text-black border-white font-semibold'
+                    : 'bg-[#16161b] text-[#8e8e98] border-[#292934] hover:text-white hover:border-[#8e8e98] font-medium'
                 }`}
               >
                 {cat}
@@ -90,22 +90,22 @@ export const CollectionVoidPage: React.FC<CollectionVoidPageProps> = ({
             ))}
           </div>
 
-          <div className="flex items-center gap-4 font-mono-tech text-xs text-[#8e9192]">
-            <span>FILTERED: <strong className="text-white">{filteredProducts.length} UNITS</strong></span>
-            <span>SHOWING MODELS: <strong className="text-white">MEN & WOMEN</strong></span>
+          <div className="flex items-center gap-4 font-body text-xs text-[#8e9192]">
+            <span>FILTERED: <strong className="text-white font-semibold">{filteredProducts.length} UNITS</strong></span>
+            <span>SHOWING MODELS: <strong className="text-white font-semibold">MEN & WOMEN</strong></span>
           </div>
         </div>
       </section>
 
       {/* Product Index Grid (15 Collections) */}
       <section className="px-5 md:px-16 py-16">
-        <div className="flex justify-between items-baseline border-b border-[#444748] pb-4 mb-12">
-          <h3 className="font-mono-tech text-xs uppercase tracking-widest text-white font-bold flex items-center gap-2">
-            <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+        <div className="flex justify-between items-baseline border-b border-[#25252e] pb-4 mb-12">
+          <h3 className="font-body text-xs uppercase tracking-wider text-white font-semibold flex items-center gap-2">
+            <span className="w-1.5 h-1.5 bg-[#9e1b24] rounded-full"></span>
             CATALOG INDEX [{filteredProducts.length < 10 ? `0${filteredProducts.length}` : filteredProducts.length} UNITS]
           </h3>
-          <span className="font-mono-tech text-[10px] text-[#8e9192] uppercase">
-            UNDERGROUNDZ GUARANTEE: BRANDED APPAREL & MODEL PHOTOS
+          <span className="font-body text-[11px] text-[#8e9192] uppercase tracking-wider">
+            UNDERGROUNDZ GUARANTEE: CERTIFIED TECHNICAL GEAR
           </span>
         </div>
 
@@ -113,7 +113,7 @@ export const CollectionVoidPage: React.FC<CollectionVoidPageProps> = ({
           {filteredProducts.map((product) => (
             <article
               key={product.id}
-              className="group relative flex flex-col bg-[#181818] border border-[#3a3a3a] hover:border-white transition-all duration-300"
+              className="group relative flex flex-col bg-[#101014] border border-[#22222a] hover:border-white/50 transition-all duration-300"
             >
               {/* Product Image Box */}
               <div
@@ -121,7 +121,7 @@ export const CollectionVoidPage: React.FC<CollectionVoidPageProps> = ({
                   onSelectProduct(product);
                   setCurrentView('product');
                 }}
-                className="aspect-[4/5] bg-[#0e0e0e] overflow-hidden cursor-pointer relative"
+                className="aspect-[4/5] bg-[#0c0c0e] overflow-hidden cursor-pointer relative"
               >
                 <img
                   src={product.image}
@@ -132,36 +132,49 @@ export const CollectionVoidPage: React.FC<CollectionVoidPageProps> = ({
 
                 {/* Top Overlay Badges */}
                 <div className="absolute top-3 left-3 flex flex-col gap-1 z-10">
-                  <span className="bg-[#131313]/90 text-white font-mono-tech text-[10px] px-2.5 py-1 border border-[#3a3a3a] uppercase font-bold tracking-wider flex items-center gap-1.5">
+                  {product.openingOffer && (
+                    <span className="bg-[#9e1b24] text-white font-body text-[10px] px-2.5 py-1 uppercase font-bold tracking-wider shadow-md flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                      OPENING OFFER
+                    </span>
+                  )}
+                  <span className="bg-[#101014]/90 text-white font-body text-[10px] px-2.5 py-1 border border-[#2a2a34] uppercase font-semibold tracking-wider flex items-center gap-1.5">
                     <span className="material-symbols-outlined text-xs">person</span>
                     MODEL: {product.model} WEARING
                   </span>
-                  <span className="bg-black/90 text-emerald-400 font-mono-tech text-[9px] px-2 py-0.5 border border-[#3a3a3a]">
+                  <span className="bg-black/90 text-[#b0b0ba] font-body text-[9px] px-2 py-0.5 border border-[#2a2a34]">
                     SPECS: {product.specs.waterproof} / {product.specs.weight}
                   </span>
                 </div>
 
                 {/* Prominent UNDERGROUNDZ Branding Stamp Badge on Image */}
-                <div className="absolute bottom-3 right-3 bg-black/90 backdrop-blur-sm border border-white/40 px-3 py-1.5 text-right z-10">
-                  <span className="font-display font-extrabold text-xs text-white uppercase tracking-tighter block">
+                <div className="absolute bottom-3 right-3 bg-black/90 backdrop-blur-sm border border-white/30 px-3 py-1.5 text-right z-10">
+                  <span className="font-display font-bold text-sm text-white uppercase tracking-tight block">
                     UNDERGROUNDZ
                   </span>
-                  <span className="font-mono-tech text-[8px] text-[#c4c7c8] uppercase block">
+                  <span className="font-body text-[9px] text-[#9c9ca8] uppercase tracking-wider block font-medium">
                     {product.undergroundzBranding}
                   </span>
                 </div>
               </div>
 
               {/* Card Meta & Actions */}
-              <div className="p-6 flex flex-col flex-1 justify-between gap-6 bg-[#131313]">
+              <div className="p-6 flex flex-col flex-1 justify-between gap-5 bg-[#101014]">
                 <div>
                   <div className="flex justify-between items-start mb-2">
-                    <span className="font-mono-tech text-[10px] text-[#8e9192] uppercase">
-                      COLLECTION // {product.category} — {product.itemNumber}
+                    <span className="font-body text-[11px] text-[#8e8e98] uppercase font-medium tracking-wider">
+                      SERIES // {product.category} — {product.itemNumber}
                     </span>
-                    <span className="font-mono-tech text-base text-white font-extrabold">
-                      {product.currency}{product.price.toFixed(2)}
-                    </span>
+                    <div className="text-right">
+                      <span className="font-body text-base text-white font-bold tracking-tight block">
+                        {product.currency}{product.price % 1 === 0 ? product.price.toLocaleString() : product.price.toFixed(2)}
+                      </span>
+                      {product.originalPrice && product.originalPrice > product.price && (
+                        <span className="font-body text-[11px] text-[#71717a] line-through block">
+                          {product.currency}{product.originalPrice % 1 === 0 ? product.originalPrice.toLocaleString() : product.originalPrice.toFixed(2)}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   <h4
@@ -169,18 +182,18 @@ export const CollectionVoidPage: React.FC<CollectionVoidPageProps> = ({
                       onSelectProduct(product);
                       setCurrentView('product');
                     }}
-                    className="font-display text-xl uppercase font-bold text-white cursor-pointer hover:underline tracking-tight mb-2"
+                    className="font-body text-lg uppercase font-semibold text-white cursor-pointer hover:underline tracking-tight mb-2"
                   >
                     {product.name}
                   </h4>
 
-                  <p className="font-body text-xs text-[#c4c7c8] line-clamp-2 mb-3">
+                  <p className="font-body text-xs text-[#9c9ca8] line-clamp-2 mb-3 leading-relaxed">
                     {product.description}
                   </p>
 
-                  <div className="p-2.5 bg-[#1b1b1b] border border-[#3a3a3a] font-mono-tech text-[10px] text-white flex justify-between items-center">
-                    <span className="text-[#8e9192] uppercase">BRAND EMBLEM:</span>
-                    <span className="font-bold text-white uppercase">{product.undergroundzBranding}</span>
+                  <div className="p-2.5 bg-[#16161b] border border-[#23232c] font-body text-[11px] text-white flex justify-between items-center">
+                    <span className="text-[#8e8e98] uppercase">BRAND EMBLEM:</span>
+                    <span className="font-semibold text-white uppercase">{product.undergroundzBranding}</span>
                   </div>
                 </div>
 
@@ -188,7 +201,7 @@ export const CollectionVoidPage: React.FC<CollectionVoidPageProps> = ({
                   <HoverBorderGradient
                     containerClassName="flex-1 rounded-none active:scale-[0.98] transition-transform"
                     as="button"
-                    className="w-full bg-white text-black py-3 px-4 font-display font-bold text-xs uppercase text-center hover:bg-[#c6c6c7] transition-colors"
+                    className="w-full bg-white text-black py-3 px-4 font-body font-semibold text-xs uppercase text-center hover:bg-[#d8d8d8] transition-colors tracking-wider"
                     onClick={() => {
                       onSelectProduct(product);
                       setCurrentView('product');
@@ -199,12 +212,12 @@ export const CollectionVoidPage: React.FC<CollectionVoidPageProps> = ({
                   <HoverBorderGradient
                     containerClassName="w-12 h-12 rounded-none"
                     as="button"
-                    className="w-full h-full bg-[#1b1b1b] text-white flex items-center justify-center hover:text-white transition-colors"
+                    className="w-full h-full bg-[#16161b] hover:bg-[#202028] text-white flex items-center justify-center p-0 transition-colors"
                     onClick={() => handleQuickAdd(product)}
-                    title="Add to Gear Bay"
+                    title="Quick Add to Bag"
                   >
-                    <span className="material-symbols-outlined">
-                      {addedNotice === product.id ? 'check' : 'add'}
+                    <span className="material-symbols-outlined text-sm">
+                      {addedNotice === product.id ? 'check' : 'shopping_bag'}
                     </span>
                   </HoverBorderGradient>
                 </div>
@@ -216,9 +229,9 @@ export const CollectionVoidPage: React.FC<CollectionVoidPageProps> = ({
 
       {/* Atmospheric Footer Divider */}
       <section className="py-16 flex flex-col items-center justify-center text-center">
-        <div className="w-[1px] h-20 bg-[#444748] mb-6"></div>
-        <p className="font-mono-tech text-[10px] tracking-[0.4em] uppercase text-[#8e9192]">
-          ALL 15 UNDERGROUNDZ COLLECTIONS INDEXED & VERIFIED
+        <div className="w-[1px] h-16 bg-[#25252e] mb-6"></div>
+        <p className="font-body text-[11px] tracking-widest uppercase text-[#8e8e98] font-medium">
+          ALL 15 UNDERGROUNDZ EDITIONS INDEXED & VERIFIED
         </p>
       </section>
     </main>

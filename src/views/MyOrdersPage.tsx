@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Order, ViewType } from '../types';
-import { getCurrentUser, fetchUserOrders, signInWithGoogle, MockUser } from '../lib/supabase';
+import { getCurrentUser, fetchUserOrders, signInWithGoogle } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import { HoverBorderGradient } from '../components/ui/hover-border-gradient';
 import {
@@ -25,7 +25,7 @@ interface MyOrdersPageProps {
 export const MyOrdersPage: React.FC<MyOrdersPageProps> = ({
   setCurrentView,
 }) => {
-  const [user, setUser] = useState<User | MockUser | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
@@ -121,7 +121,7 @@ export const MyOrdersPage: React.FC<MyOrdersPageProps> = ({
               as="button"
               containerClassName="rounded-none shrink-0"
               className="px-4 py-2 bg-white text-black font-bold uppercase hover:bg-[#ccc] transition-colors"
-              onClick={() => signInWithGoogle()}
+              onClick={() => signInWithGoogle({ returnView: 'my-orders' })}
             >
               SIGN IN WITH GOOGLE
             </HoverBorderGradient>
@@ -305,14 +305,14 @@ export const MyOrdersPage: React.FC<MyOrdersPageProps> = ({
                                   {item.product.name}
                                 </span>
                                 <span className="text-[10px] text-[#888] block">
-                                  SIZE: {item.size} | COLOR: {item.color || 'VOID BLACK'}
+                                  SIZE: {item.size} | COLOR: {item.color || 'NIGHT REFLECTION'}
                                 </span>
                                 <span className="text-[10px] text-[#aaa]">
-                                  QTY: {item.quantity} × ${item.product.price}
+                                  QTY: {item.quantity} × {item.product.currency || '₹'}{item.product.price}
                                 </span>
                               </div>
                               <span className="font-bold text-white shrink-0">
-                                ${(item.product.price * item.quantity).toFixed(2)}
+                                {item.product.currency || '₹'}{((item.product.price * item.quantity) % 1 === 0 ? (item.product.price * item.quantity).toLocaleString() : (item.product.price * item.quantity).toFixed(2))}
                               </span>
                             </div>
                           ))}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ProductItem, ViewType } from '../types';
 import { PRODUCT_REVIEWS } from '../data';
 import { ProductImageGallery } from '../components/ProductImageGallery';
@@ -25,13 +25,18 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     product.availableSizes[0] || 'M'
   );
   const [selectedColor, setSelectedColor] = useState<string>(
-    product.availableColors?.[0]?.name || 'VOID BLACK'
+    product.availableColors?.[0]?.name || 'NIGHT REFLECTION'
   );
   const [visualizerMode, setVisualizerMode] = useState<
     'standard' | 'wireframe' | 'thermal' | 'xray'
   >('standard');
   const [validationError, setValidationError] = useState<string | null>(null);
   const [added, setAdded] = useState(false);
+
+  useEffect(() => {
+    setSelectedSize(product.availableSizes[0] || 'M');
+    setSelectedColor(product.availableColors?.[0]?.name || 'NIGHT REFLECTION');
+  }, [product]);
 
   const reviews = PRODUCT_REVIEWS[product.id] || [];
 
@@ -79,7 +84,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
       {/* Top Product Showcase & Purchasing Section */}
       <section className="px-5 md:px-16 max-w-7xl mx-auto">
         {/* Breadcrumb telemetry */}
-        <div className="flex items-center gap-2 font-mono text-[11px] text-[#777] mb-6 tracking-widest uppercase">
+        <div className="flex items-center gap-2 font-body text-xs text-[#8e8e98] mb-6 tracking-wider uppercase font-medium">
           <button
             onClick={() => setCurrentView('home')}
             className="hover:text-white transition-colors cursor-pointer"
@@ -94,7 +99,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             {product.category}
           </button>
           <span>/</span>
-          <span className="text-white font-bold">{product.code}</span>
+          <span className="text-white font-semibold">{product.code}</span>
         </div>
 
         {/* 2-Column Responsive Layout: Left Image Gallery, Right Product Purchasing Studio */}
@@ -112,21 +117,27 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             <div>
               {/* Badges row */}
               <div className="flex flex-wrap items-center gap-2 mb-3">
-                <span className="font-mono text-[10px] text-white bg-[#1b1b1b] border border-[#333] px-2.5 py-0.5 uppercase tracking-widest font-bold">
+                {product.openingOffer && (
+                  <span className="font-body text-[10px] text-white bg-[#9e1b24] border border-[#9e1b24] px-2.5 py-1 uppercase tracking-wider font-bold shadow-sm flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                    OPENING OFFER
+                  </span>
+                )}
+                <span className="font-body text-[10px] text-white bg-[#141418] border border-[#272732] px-2.5 py-1 uppercase tracking-wider font-semibold">
                   MODEL: {product.model}
                 </span>
-                <span className="font-mono text-[10px] text-[#00ff88] bg-[#00ff88]/10 border border-[#00ff88]/30 px-2.5 py-0.5 uppercase tracking-widest font-bold">
+                <span className="font-body text-[10px] text-white bg-[#1a1a22] border border-white/20 px-2.5 py-1 uppercase tracking-wider font-semibold">
                   {product.undergroundzBranding}
                 </span>
                 {product.inStock && (
-                  <span className="font-mono text-[10px] text-[#ffaa44] bg-[#ffaa44]/10 border border-[#ffaa44]/30 px-2.5 py-0.5 uppercase tracking-widest">
+                  <span className="font-body text-[10px] text-[#e0a855] bg-[#e0a855]/10 border border-[#e0a855]/30 px-2.5 py-1 uppercase tracking-wider font-semibold">
                     {product.stockCount} UNITS REMAINING
                   </span>
                 )}
               </div>
 
-              {/* Title & Code */}
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-white mb-2 leading-none">
+              {/* Title & Code (Rule 3: Clean premium sans-serif with medium/semi-bold weight, prioritize readability) */}
+              <h1 className="font-body text-2xl sm:text-3xl md:text-4xl font-semibold uppercase tracking-tight text-white mb-2 leading-tight">
                 {product.name}
               </h1>
 
@@ -135,49 +146,54 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                 onClick={scrollToReviews}
                 className="flex items-center gap-2 mb-6 group cursor-pointer"
               >
-                <div className="flex items-center text-[#ff3300]">
+                <div className="flex items-center text-white">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className="w-3.5 h-3.5 fill-[#ff3300] text-[#ff3300]"
+                      className="w-3.5 h-3.5 fill-white text-white"
                     />
                   ))}
                 </div>
-                <span className="font-mono text-xs text-[#aaa] group-hover:text-white transition-colors">
-                  {product.ratingSummary || 4.9} ({product.reviewsCount || reviews.length} Community Reviews)
+                <span className="font-body text-xs text-[#9c9ca8] group-hover:text-white transition-colors">
+                  {product.ratingSummary || 4.9} ({product.reviewsCount || reviews.length} Verified Reviews)
                 </span>
               </button>
 
               {/* Pricing & Discount */}
-              <div className="p-4 bg-[#0d0d0f] border border-[#222] mb-6 flex items-baseline justify-between">
+              <div className="p-5 bg-[#0e0e12] border border-[#202026] mb-6 flex items-baseline justify-between">
                 <div>
                   <div className="flex items-baseline gap-3">
-                    <span className="font-mono text-3xl font-black text-white">
+                    <span className="font-body text-3xl font-bold text-white tracking-tight">
                       {product.currency}
-                      {product.price.toFixed(2)}
+                      {product.price % 1 === 0 ? product.price.toLocaleString() : product.price.toFixed(2)}
                     </span>
                     {product.originalPrice && product.originalPrice > product.price && (
-                      <span className="font-mono text-base text-[#666] line-through">
+                      <span className="font-body text-base text-[#666] line-through">
                         {product.currency}
-                        {product.originalPrice.toFixed(2)}
+                        {product.originalPrice % 1 === 0 ? product.originalPrice.toLocaleString() : product.originalPrice.toFixed(2)}
                       </span>
                     )}
                   </div>
-                  {discountPercent > 0 && (
-                    <span className="font-mono text-[10px] text-[#00ff88] tracking-widest uppercase block mt-1">
-                      SAVE {product.currency}{discountAmount} ({discountPercent}% ARCHIVE DISCOUNT)
+                  {product.openingOffer ? (
+                    <span className="font-body text-[11px] text-[#e0a855] tracking-wider uppercase font-semibold block mt-1.5 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#e0a855]" />
+                      SPECIAL OPENING OFFER • SAVE {product.currency}{discountAmount.toLocaleString()} ({discountPercent}% OFF)
                     </span>
-                  )}
+                  ) : discountPercent > 0 ? (
+                    <span className="font-body text-[11px] text-[#9e1b24] tracking-wider uppercase font-semibold block mt-1.5">
+                      SAVE {product.currency}{discountAmount.toLocaleString()} ({discountPercent}% ARCHIVE DISCOUNT)
+                    </span>
+                  ) : null}
                 </div>
 
                 <div className="text-right">
-                  <span className="font-mono text-[10px] text-[#888] block uppercase">STATUS</span>
-                  <span className="font-mono text-xs text-[#00ff88] font-bold">READY TO SHIP</span>
+                  <span className="font-body text-[10px] text-[#888] block uppercase tracking-wider">STATUS</span>
+                  <span className="font-body text-xs text-white font-semibold">READY TO SHIP</span>
                 </div>
               </div>
 
               {/* Description */}
-              <p className="text-sm text-[#bbb] leading-relaxed mb-6 font-sans">
+              <p className="text-sm text-[#b0b0ba] leading-relaxed mb-6 font-body">
                 {product.description}
               </p>
 
@@ -185,9 +201,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
               {product.availableColors && product.availableColors.length > 0 && (
                 <div className="mb-6">
                   <div className="flex justify-between items-center mb-2.5">
-                    <span className="font-mono text-xs text-[#888] uppercase tracking-wider">
-                      COLORWAY: <strong className="text-white">{selectedColor}</strong>
+                    <span className="font-body text-xs text-[#8e8e98] uppercase tracking-wider font-semibold">
+                      COLORWAY: <strong className="text-white font-semibold">{selectedColor}</strong>
                     </span>
+                    {product.availableColors.length === 1 && (
+                      <span className="font-body text-[10px] text-[#9e1b24] uppercase tracking-wider font-semibold">
+                        EXCLUSIVE SINGLE COLORWAY
+                      </span>
+                    )}
                   </div>
                   <div className="flex gap-3">
                     {product.availableColors.map((color) => (
@@ -197,10 +218,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                           setSelectedColor(color.name);
                           setValidationError(null);
                         }}
-                        className={`flex items-center gap-2 px-3 py-2 border font-mono text-xs transition-all cursor-pointer ${
+                        className={`flex items-center gap-2 px-3 py-2 border font-body text-xs transition-all cursor-pointer font-medium ${
                           selectedColor === color.name
-                            ? 'border-white bg-[#1a1a1c] text-white shadow-sm'
-                            : 'border-[#262626] bg-[#0c0c0d] text-[#888] hover:border-[#555]'
+                            ? 'border-white bg-[#1a1a20] text-white shadow-sm font-semibold'
+                            : 'border-[#262630] bg-[#0e0e12] text-[#8e8e98] hover:border-[#555]'
                         }`}
                       >
                         <span
@@ -217,17 +238,17 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
               {/* Size Selector with Size Guide Link */}
               <div className="mb-6">
                 <div className="flex justify-between items-center mb-2.5">
-                  <span className="font-mono text-xs text-[#888] uppercase tracking-wider">
-                    SIZE: <strong className="text-white">{selectedSize || 'SELECT SIZE'}</strong>
+                  <span className="font-body text-xs text-[#8e8e98] uppercase tracking-wider font-semibold">
+                    SIZE: <strong className="text-white font-semibold">{selectedSize || 'SELECT SIZE'}</strong>
                   </span>
                   <button
                     onClick={onOpenSizeGuide}
-                    className="font-mono text-xs text-[#aaa] underline hover:text-white transition-colors cursor-pointer"
+                    className="font-body text-xs text-[#9c9ca8] underline hover:text-white transition-colors cursor-pointer"
                   >
                     SIZE GUIDE
                   </button>
                 </div>
-                <div className="grid grid-cols-5 gap-2 font-mono text-xs">
+                <div className="grid grid-cols-5 gap-2 font-body text-xs">
                   {product.availableSizes.map((size) => (
                     <button
                       key={size}
@@ -235,10 +256,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                         setSelectedSize(size);
                         setValidationError(null);
                       }}
-                      className={`h-11 border transition-all cursor-pointer font-bold ${
+                      className={`h-11 border transition-all cursor-pointer font-semibold ${
                         selectedSize === size
                           ? 'bg-white text-black border-white'
-                          : 'bg-[#121214] text-[#ccc] border-[#2e2e32] hover:border-white'
+                          : 'bg-[#121216] text-[#ccc] border-[#262630] hover:border-white'
                       }`}
                     >
                       {size}
@@ -249,7 +270,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
               {/* Validation Alert */}
               {validationError && (
-                <div className="flex items-center gap-2 p-3 bg-red-950/40 border border-red-500/50 text-red-200 text-xs font-mono mb-4">
+                <div className="flex items-center gap-2 p-3 bg-red-950/40 border border-red-500/50 text-red-200 text-xs font-body mb-4">
                   <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
                   <span>{validationError}</span>
                 </div>
@@ -261,7 +282,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                   id="btn-add-to-cart"
                   as="button"
                   containerClassName="flex-1 rounded-none"
-                  className="w-full h-14 bg-white text-black font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#e0e0e0] active:scale-[0.99] transition-all"
+                  className="w-full h-14 bg-white text-black font-body font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#d8d8d8] active:scale-[0.99] transition-all"
                   onClick={handleAdd}
                 >
                   {added ? (
@@ -281,9 +302,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                   id="btn-buy-now"
                   as="button"
                   containerClassName="flex-1 rounded-none"
-                  className="w-full h-14 bg-[#ff3300] text-white font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#e02e00] active:scale-[0.99] transition-all"
+                  className="w-full h-14 bg-[#9e1b24] text-white font-body font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#82141c] active:scale-[0.99] transition-all"
                   onClick={handleBuyNowClick}
-                  highlightColor="radial-gradient(75% 181.15% at 50% 50%, #ff5500 0%, rgba(255, 255, 255, 0) 100%)"
+                  highlightColor="radial-gradient(75% 181.15% at 50% 50%, #b8222d 0%, rgba(255, 255, 255, 0) 100%)"
                 >
                   <Zap className="w-4 h-4" />
                   <span>BUY NOW</span>
@@ -291,13 +312,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
               </div>
 
               {/* Assurance bullets */}
-              <div className="grid grid-cols-2 gap-3 pt-4 border-t border-[#1e1e20] text-[10px] font-mono text-[#888]">
+              <div className="grid grid-cols-2 gap-3 pt-4 border-t border-[#1e1e24] text-[11px] font-body text-[#8e8e98]">
                 <div className="flex items-center gap-1.5">
-                  <Shield className="w-3.5 h-3.5 text-[#00ff88]" />
+                  <Shield className="w-3.5 h-3.5 text-white" />
                   <span>OFFICIAL UNDERGROUNDZ PRODUCT</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[#00ff88]"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
                   <span>DISPATCH WITHIN 24 HOURS</span>
                 </div>
               </div>
@@ -306,42 +327,42 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
         </div>
       </section>
 
-      {/* Technical Specification Section (Original Preserved) */}
-      <section className="mt-20 py-16 px-5 md:px-16 border-t border-[#222] bg-[#0c0c0e]">
+      {/* Technical Specification Section */}
+      <section className="mt-20 py-16 px-5 md:px-16 border-t border-[#202026] bg-[#0c0c0e]">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8">
           <div className="md:col-span-4 flex flex-col justify-between gap-8">
             <div>
-              <h3 className="font-mono text-xs text-[#8e9192] uppercase tracking-widest mb-6 font-bold">
+              <h3 className="font-body text-xs text-[#8e9192] uppercase tracking-wider mb-6 font-semibold">
                 MATERIAL COMPOSITION & TELEMETRY
               </h3>
-              <ul className="flex flex-col gap-4 border-l border-[#2e2e32] pl-6 font-mono text-xs">
+              <ul className="flex flex-col gap-4 border-l border-[#262630] pl-6 font-body text-xs">
                 <li className="flex flex-col">
-                  <span className="text-white font-bold uppercase">FABRIC SPECIFICATION</span>
-                  <span className="text-[#a0a0a4] text-[11px]">{product.materialInfo || product.specs.material}</span>
+                  <span className="text-white font-semibold uppercase">FABRIC SPECIFICATION</span>
+                  <span className="text-[#a0a0a4] text-[11px] mt-0.5">{product.materialInfo || product.specs.material}</span>
                 </li>
                 <li className="flex flex-col">
-                  <span className="text-white font-bold uppercase">HARDWARE SYSTEM</span>
-                  <span className="text-[#a0a0a4] text-[11px]">{product.specs.hardware}</span>
+                  <span className="text-white font-semibold uppercase">HARDWARE SYSTEM</span>
+                  <span className="text-[#a0a0a4] text-[11px] mt-0.5">{product.specs.hardware}</span>
                 </li>
                 <li className="flex flex-col">
-                  <span className="text-white font-bold uppercase">FUNCTIONAL UTILITY</span>
-                  <span className="text-[#a0a0a4] text-[11px]">{product.specs.utility}</span>
+                  <span className="text-white font-semibold uppercase">FUNCTIONAL UTILITY</span>
+                  <span className="text-[#a0a0a4] text-[11px] mt-0.5">{product.specs.utility}</span>
                 </li>
                 <li className="flex flex-col">
-                  <span className="text-white font-bold uppercase">THERMAL RATING</span>
-                  <span className="text-[#a0a0a4] text-[11px]">{product.specs.thermal}</span>
+                  <span className="text-white font-semibold uppercase">THERMAL RATING</span>
+                  <span className="text-[#a0a0a4] text-[11px] mt-0.5">{product.specs.thermal}</span>
                 </li>
               </ul>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 pt-4 border-t border-[#222]">
-              <div className="border border-[#222] p-3 text-center bg-[#131316]">
-                <span className="block font-mono text-[9px] text-[#8e9192] uppercase">WATERPROOF</span>
-                <span className="font-mono text-lg font-bold text-white">{product.specs.waterproof}</span>
+            <div className="grid grid-cols-2 gap-3 pt-4 border-t border-[#202026]">
+              <div className="border border-[#202026] p-3 text-center bg-[#111115]">
+                <span className="block font-body text-[10px] text-[#8e9192] uppercase font-medium">WATERPROOF</span>
+                <span className="font-body text-lg font-bold text-white mt-1">{product.specs.waterproof}</span>
               </div>
-              <div className="border border-[#222] p-3 text-center bg-[#131316]">
-                <span className="block font-mono text-[9px] text-[#8e9192] uppercase">WEIGHT</span>
-                <span className="font-mono text-lg font-bold text-white">{product.specs.weight}</span>
+              <div className="border border-[#202026] p-3 text-center bg-[#111115]">
+                <span className="block font-body text-[10px] text-[#8e9192] uppercase font-medium">WEIGHT</span>
+                <span className="font-body text-lg font-bold text-white mt-1">{product.specs.weight}</span>
               </div>
             </div>
           </div>
@@ -419,13 +440,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
       </div>
 
       {/* Concept Narrative Section */}
-      <section className="mt-20 py-16 px-5 md:px-16 border-t border-[#222] bg-[#070708]">
+      <section className="mt-20 py-16 px-5 md:px-16 border-t border-[#202026] bg-[#070708]">
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row gap-12">
           <div className="flex-1">
-            <h4 className="text-xl font-bold uppercase tracking-tight text-white mb-4">
+            <h4 className="text-xl font-bold uppercase tracking-tight text-white mb-4 font-body">
               Concept Narrative
             </h4>
-            <div className="text-[#a8a8ae] font-sans text-sm space-y-4 leading-relaxed">
+            <div className="text-[#a8a8ae] font-body text-sm space-y-4 leading-relaxed">
               {product.longDescription.split('\n\n').map((paragraph, i) => (
                 <p key={i}>{paragraph}</p>
               ))}
@@ -433,20 +454,20 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
           </div>
 
           <div className="w-full md:w-72 flex flex-col gap-4">
-            <div className="border border-[#222] p-4 flex flex-col gap-1 bg-[#0e0e10]">
-              <span className="font-mono text-[10px] text-[#888] uppercase">Origin Node</span>
-              <span className="font-mono text-sm font-bold text-white uppercase">{product.origin}</span>
+            <div className="border border-[#202026] p-4 flex flex-col gap-1 bg-[#0e0e12]">
+              <span className="font-body text-[10px] text-[#888] uppercase font-medium tracking-wider">Origin Node</span>
+              <span className="font-body text-sm font-semibold text-white uppercase">{product.origin}</span>
             </div>
 
-            <div className="border border-[#222] p-4 flex flex-col gap-1 bg-[#0e0e10]">
-              <span className="font-mono text-[10px] text-[#888] uppercase">Edition Status</span>
-              <span className="font-mono text-sm font-bold text-white uppercase">{product.editionStatus}</span>
+            <div className="border border-[#202026] p-4 flex flex-col gap-1 bg-[#0e0e12]">
+              <span className="font-body text-[10px] text-[#888] uppercase font-medium tracking-wider">Edition Status</span>
+              <span className="font-body text-sm font-semibold text-white uppercase">{product.editionStatus}</span>
             </div>
 
             <HoverBorderGradient
               containerClassName="w-full rounded-none"
               as="button"
-              className="w-full h-12 bg-[#0e0e10] text-white font-mono text-xs uppercase hover:text-white transition-all"
+              className="w-full h-12 bg-[#0e0e12] text-white font-body font-semibold text-xs uppercase hover:text-white transition-all tracking-wider"
               onClick={onOpenSizeGuide}
             >
               VIEW SIZE GUIDE

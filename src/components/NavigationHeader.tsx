@@ -2,7 +2,6 @@ import React from 'react';
 import { ViewType, CartItem } from '../types';
 import { User as UserIcon, Package, ShoppingBag, Menu } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
-import { MockUser } from '../lib/supabase';
 
 interface NavigationHeaderProps {
   currentView: ViewType;
@@ -12,7 +11,7 @@ interface NavigationHeaderProps {
   setIsMenuOpen: (open: boolean) => void;
   onSelectCategory?: (category: string) => void;
   onOpenAccount?: () => void;
-  user?: User | MockUser | null;
+  user?: User | null;
 }
 
 export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
@@ -50,28 +49,41 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
       <div className="hidden md:flex gap-8 items-center">
         <nav className="flex gap-8 items-center">
           <button
+            id="btn-header-intro"
+            onClick={() => setCurrentView('intro')}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-sm border text-[11px] font-mono tracking-wider transition-all cursor-pointer ${
+              currentView === 'intro'
+                ? 'bg-white text-black border-white font-bold'
+                : 'bg-white/5 hover:bg-white/15 border-white/20 hover:border-white/40 text-white'
+            }`}
+            title="Play 4K Cinematic Brand Intro"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+            <span>4K INTRO [5S]</span>
+          </button>
+          <button
             onClick={() => {
               if (onSelectCategory) onSelectCategory('VOID');
               setCurrentView('collection');
             }}
-            className={`font-mono text-xs tracking-wider uppercase transition-colors cursor-pointer ${
-              currentView === 'collection' ? 'text-white font-bold underline underline-offset-4' : 'text-[#8e9192] hover:text-white'
+            className={`font-body text-xs tracking-wider uppercase transition-colors cursor-pointer ${
+              currentView === 'collection' ? 'text-white font-semibold underline underline-offset-8' : 'text-[#8e8e98] hover:text-white font-medium'
             }`}
           >
             Collections
           </button>
           <button
             onClick={() => setCurrentView('community')}
-            className={`font-mono text-xs tracking-wider uppercase transition-colors cursor-pointer ${
-              currentView === 'community' ? 'text-white font-bold underline underline-offset-4' : 'text-[#8e9192] hover:text-white'
+            className={`font-body text-xs tracking-wider uppercase transition-colors cursor-pointer ${
+              currentView === 'community' ? 'text-white font-semibold underline underline-offset-8' : 'text-[#8e8e98] hover:text-white font-medium'
             }`}
           >
             Community
           </button>
           <button
             onClick={() => setCurrentView('my-orders')}
-            className={`font-mono text-xs tracking-wider uppercase transition-colors cursor-pointer flex items-center gap-1.5 ${
-              currentView === 'my-orders' ? 'text-white font-bold underline underline-offset-4' : 'text-[#8e9192] hover:text-white'
+            className={`font-body text-xs tracking-wider uppercase transition-colors cursor-pointer flex items-center gap-1.5 ${
+              currentView === 'my-orders' ? 'text-white font-semibold underline underline-offset-8' : 'text-[#8e8e98] hover:text-white font-medium'
             }`}
           >
             <Package className="w-3.5 h-3.5" />
@@ -94,11 +106,11 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
               referrerPolicy="no-referrer"
             />
           ) : (
-            <div className="w-6 h-6 border border-[#444] bg-[#1a1a1a] flex items-center justify-center text-[10px] font-mono font-bold text-white">
+            <div className="w-6 h-6 border border-[#333] bg-[#141418] flex items-center justify-center text-[10px] font-body font-semibold text-white">
               {user ? (user.email || 'U')[0].toUpperCase() : <UserIcon className="w-3.5 h-3.5" />}
             </div>
           )}
-          <span className="font-mono text-[11px] text-[#aaa] hidden lg:inline">
+          <span className="font-body text-xs font-semibold tracking-wider text-[#b8b8c2] hidden lg:inline uppercase">
             {user ? 'ACCOUNT' : 'SIGN IN'}
           </span>
         </button>
@@ -112,7 +124,7 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
         >
           <ShoppingBag className="w-5 h-5" />
           {totalCartItems > 0 && (
-            <span className="absolute -top-1 -right-1 bg-[#ff3300] text-white font-mono text-[10px] font-bold w-4 h-4 rounded-none flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 bg-[#9e1b24] text-white font-body text-[10px] font-bold w-4 h-4 rounded-none flex items-center justify-center">
               {totalCartItems}
             </span>
           )}
@@ -144,7 +156,7 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
         >
           <ShoppingBag className="w-5 h-5" />
           {totalCartItems > 0 && (
-            <span className="absolute -top-1 -right-1 bg-[#ff3300] text-white font-mono text-[10px] font-bold w-4 h-4 rounded-none flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 bg-[#9e1b24] text-white font-body text-[10px] font-bold w-4 h-4 rounded-none flex items-center justify-center">
               {totalCartItems}
             </span>
           )}

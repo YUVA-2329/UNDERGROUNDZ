@@ -3,7 +3,6 @@ import { CartItem, CustomerDetails, Order, ViewType } from '../types';
 import {
   getCurrentUser,
   signInWithGoogle,
-  MockUser,
   isSupabaseConfigured,
 } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
@@ -33,7 +32,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
   onOrderSuccess,
   onClearCart,
 }) => {
-  const [currentUser, setCurrentUser] = useState<User | MockUser | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [checkoutStep, setCheckoutStep] = useState<'details' | 'payment'>('details');
   const [paymentError, setPaymentError] = useState<string | null>(null);
@@ -54,24 +53,48 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
     Partial<Record<keyof CustomerDetails, string>>
   >({});
 
-  // Sync authenticated user details
+  // Sync authenticated user details & pre-fill fields
   useEffect(() => {
     async function loadUser() {
       setAuthLoading(true);
       const user = await getCurrentUser();
       setCurrentUser(user);
 
-      if (user) {
-        setCustomer((prev) => ({
-          ...prev,
-          fullName:
-            prev.fullName ||
-            user.user_metadata?.full_name ||
-            user.user_metadata?.name ||
-            '',
-          email: prev.email || user.email || '',
-        }));
+      // Check saved customer details in local cache
+      let savedLocal: Partial<CustomerDetails> = {};
+      try {
+        const stored = localStorage.getItem('undergroundz_customer_details');
+        if (stored) {
+          savedLocal = JSON.parse(stored);
+        }
+      } catch (e) {
+        console.warn('Failed to parse saved customer details', e);
       }
+
+      const inferredName =
+        user?.user_metadata?.full_name ||
+        user?.user_metadata?.name ||
+        user?.user_metadata?.user_name ||
+        (user?.email ? user.email.split('@')[0].replace(/[._-]/g, ' ') : '');
+
+      setCustomer((prev) => {
+        const updated = {
+          ...prev,
+          fullName: prev.fullName || inferredName || savedLocal.fullName || '',
+          email: prev.email || user?.email || savedLocal.email || '',
+          phone: prev.phone || user?.user_metadata?.phone || (user as any)?.phone || savedLocal.phone || '',
+          address: prev.address || savedLocal.address || '',
+          city: prev.city || savedLocal.city || '',
+          state: prev.state || savedLocal.state || '',
+          pincode: prev.pincode || savedLocal.pincode || '',
+          country: prev.country || savedLocal.country || 'India',
+        };
+        try {
+          localStorage.setItem('undergroundz_customer_details', JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
+
       setAuthLoading(false);
     }
 
@@ -89,11 +112,18 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
     (acc, item) => acc + item.product.price * item.quantity,
     0
   );
-  const shipping = subtotal > 500 || subtotal === 0 ? 0 : 25;
+  const currency = '₹';
+  const shipping = subtotal >= 999 || subtotal === 0 ? 0 : 99;
   const total = subtotal + shipping;
 
   const handleInputChange = (field: keyof CustomerDetails, value: string) => {
-    setCustomer((prev) => ({ ...prev, [field]: value }));
+    setCustomer((prev) => {
+      const updated = { ...prev, [field]: value };
+      try {
+        localStorage.setItem('undergroundz_customer_details', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
     if (validationErrors[field]) {
       setValidationErrors((prev) => ({ ...prev, [field]: undefined }));
     }
@@ -122,9 +152,11 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
   const handleGoogleLogin = async () => {
     setPaymentError(null);
     try {
-      const { error } = await signInWithGoogle();
+      const { error, popupBlocked, url } = await signInWithGoogle({ returnView: 'checkout' });
       if (error) {
         setPaymentError(error.message);
+      } else if (popupBlocked && url) {
+        setPaymentError(`Popup blocked. Please allow popups or visit: ${url}`);
       }
     } catch (err: any) {
       setPaymentError(err?.message || 'Authentication error');
@@ -244,41 +276,44 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
           /* Step 1: Customer Details & Order Summary Form */
           <div>
             {/* Header */}
-            <div className="border-b border-[#222] pb-6 mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div className="border-b border-[#22222a] pb-6 mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="w-2 h-2 bg-[#ff3300]"></span>
-                  <span className="font-mono text-[10px] tracking-widest text-[#888] uppercase">
-                    UNDERGROUNDZ CHECKOUT // DISPATCH PIPELINE
+                  <span className="w-2 h-2 bg-[#9e1b24]"></span>
+                  <span className="font-body text-[11px] tracking-wider text-[#8e8e98] uppercase font-semibold">
+                    UNDERGROUNDZ // DISPATCH PIPELINE
                   </span>
                 </div>
-                <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-white">
+                <h1 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-tight text-white">
                   ORDER CHECKOUT
                 </h1>
               </div>
 
               {/* Identity sync badge */}
               {currentUser ? (
-                <div className="flex items-center gap-2 font-mono text-xs text-[#aaa] bg-[#111] px-3 py-1.5 border border-[#222]">
+                <div className="flex items-center gap-2 font-body text-xs text-[#aaa] bg-[#111116] px-3.5 py-2 border border-[#22222a]">
                   <span className="w-2 h-2 rounded-full bg-[#00ff88]"></span>
-                  <span>SYNCED: {currentUser.email}</span>
+                  <span className="text-white font-medium">SIGNED IN: {currentUser.email}</span>
+                  <span className="text-[#888] font-mono text-[10px] hidden sm:inline">• AUTO-FILLED</span>
                 </div>
               ) : (
-                <HoverBorderGradient
-                  as="button"
-                  containerClassName="rounded-none"
-                  className="flex items-center gap-2 font-mono text-xs text-black bg-white hover:bg-[#ccc] px-4 py-2 uppercase font-bold transition-colors"
-                  onClick={handleGoogleLogin}
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>SIGN IN WITH GOOGLE</span>
-                </HoverBorderGradient>
+                <div className="flex items-center gap-2.5">
+                  <HoverBorderGradient
+                    as="button"
+                    containerClassName="rounded-none"
+                    className="flex items-center gap-2 font-body text-xs text-black bg-white hover:bg-[#d8d8d8] px-4 py-2 uppercase font-semibold transition-colors tracking-wider"
+                    onClick={handleGoogleLogin}
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>SIGN IN WITH GOOGLE (AUTO-FILL)</span>
+                  </HoverBorderGradient>
+                </div>
               )}
             </div>
 
             {/* Error Banner */}
             {paymentError && (
-              <div className="mb-6 p-4 bg-red-950/40 border border-red-500/50 flex items-center gap-3 font-mono text-xs text-red-200">
+              <div className="mb-6 p-4 bg-red-950/40 border border-red-500/50 flex items-center gap-3 font-body text-xs text-red-200">
                 <AlertTriangle className="w-5 h-5 text-red-400 shrink-0" />
                 <span>{paymentError}</span>
               </div>
@@ -305,7 +340,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                         type="text"
                         value={customer.fullName}
                         onChange={(e) => handleInputChange('fullName', e.target.value)}
-                        placeholder="Alex Vance"
+                        placeholder="Rider Name"
                         className={`w-full h-11 bg-[#131316] border px-3 text-white placeholder-[#555] focus:outline-none focus:border-white transition-colors ${
                           validationErrors.fullName ? 'border-red-500' : 'border-[#26262e]'
                         }`}
@@ -469,8 +504,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
 
               {/* Right Column: Order Summary & Proceed Button */}
               <div className="lg:col-span-5 flex flex-col gap-6">
-                <div className="border border-[#1e1e24] bg-[#0c0c0f] p-6 md:p-8">
-                  <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-white mb-4 pb-3 border-b border-[#1c1c22]">
+                <div className="border border-[#22222a] bg-[#111116] p-6 md:p-8">
+                  <h3 className="font-body text-xs font-bold uppercase tracking-wider text-white mb-4 pb-3 border-b border-[#202028]">
                     ORDER MANIFEST ({cart.length} ITEM{cart.length > 1 ? 'S' : ''})
                   </h3>
 
@@ -479,9 +514,9 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                     {cart.map((item, idx) => (
                       <div
                         key={`${item.product.id}-${item.size}-${item.color}-${idx}`}
-                        className="flex gap-3 pb-3 border-b border-[#18181c]"
+                        className="flex gap-3 pb-3 border-b border-[#1c1c24]"
                       >
-                        <div className="w-12 h-12 bg-[#111] border border-[#222] shrink-0 p-1 flex items-center justify-center">
+                        <div className="w-12 h-12 bg-[#16161c] border border-[#282832] shrink-0 p-1 flex items-center justify-center">
                           <img
                             src={item.product.image}
                             alt=""
@@ -489,40 +524,40 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                             referrerPolicy="no-referrer"
                           />
                         </div>
-                        <div className="flex-1 min-w-0 font-mono">
-                          <h5 className="text-xs font-bold text-white truncate">
+                        <div className="flex-1 min-w-0 font-body">
+                          <h5 className="text-xs font-semibold text-white truncate">
                             {item.product.name}
                           </h5>
-                          <p className="text-[10px] text-[#888]">
-                            SIZE: {item.size} | COLOR: {item.color || 'VOID BLACK'}
+                          <p className="text-[10px] text-[#8e8e98]">
+                            SIZE: {item.size} | COLOR: {item.color || 'NIGHT REFLECTION'}
                           </p>
                           <p className="text-[10px] text-[#aaa]">
-                            QTY: {item.quantity} × ${item.product.price}
+                            QTY: {item.quantity} × {item.product.currency}{item.product.price % 1 === 0 ? item.product.price.toLocaleString() : item.product.price.toFixed(2)}
                           </p>
                         </div>
-                        <span className="font-mono text-xs font-bold text-white shrink-0">
-                          ${(item.product.price * item.quantity).toFixed(2)}
+                        <span className="font-body text-xs font-bold text-white shrink-0">
+                          {item.product.currency}{((item.product.price * item.quantity) % 1 === 0 ? (item.product.price * item.quantity).toLocaleString() : (item.product.price * item.quantity).toFixed(2))}
                         </span>
                       </div>
                     ))}
                   </div>
 
                   {/* Calculations */}
-                  <div className="space-y-2 font-mono text-xs text-[#888] pb-4 mb-4 border-b border-[#1c1c22]">
+                  <div className="space-y-2 font-body text-xs text-[#8e8e98] pb-4 mb-4 border-b border-[#202028]">
                     <div className="flex justify-between">
                       <span>SUBTOTAL</span>
-                      <span className="text-white">${subtotal.toFixed(2)}</span>
+                      <span className="text-white font-medium">{currency}{subtotal % 1 === 0 ? subtotal.toLocaleString() : subtotal.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>SHIPPING</span>
                       <span>
-                        {shipping === 0 ? 'FREE // ARCHIVE PASS' : `$${shipping.toFixed(2)}`}
+                        {shipping === 0 ? 'COMPLIMENTARY' : `${currency}${shipping.toFixed(2)}`}
                       </span>
                     </div>
-                    <div className="flex justify-between text-white font-bold pt-2 border-t border-[#1c1c22] text-sm">
-                      <span>TOTAL</span>
-                      <span className="font-mono text-lg text-[#00ff88]">
-                        ${total.toFixed(2)}
+                    <div className="flex justify-between text-white font-bold pt-2 border-t border-[#202028] text-sm items-baseline">
+                      <span className="text-xs uppercase tracking-wider font-semibold">TOTAL DUE</span>
+                      <span className="font-display text-2xl font-bold text-white tracking-tight">
+                        {currency}{total % 1 === 0 ? total.toLocaleString() : total.toFixed(2)}
                       </span>
                     </div>
                   </div>
@@ -532,14 +567,14 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                     id="btn-proceed-to-payment"
                     as="button"
                     containerClassName="w-full rounded-none"
-                    className="w-full h-14 bg-white hover:bg-[#ddd] text-black font-mono font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-colors active:scale-[0.99]"
+                    className="w-full h-13 bg-white hover:bg-[#d8d8d8] text-black font-body font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors active:scale-[0.99]"
                     onClick={handleProceedToPayment}
                   >
-                    <span>PROCEED TO PAYMENT (${total.toFixed(2)})</span>
+                    <span>PROCEED TO PAYMENT ({currency}{total % 1 === 0 ? total.toLocaleString() : total.toFixed(2)})</span>
                   </HoverBorderGradient>
 
-                  <div className="mt-4 flex items-center justify-center gap-2 text-[10px] font-mono text-[#666]">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#00ff88]" />
+                  <div className="mt-4 flex items-center justify-center gap-2 text-[11px] font-body text-[#8e8e98]">
+                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
                     <span>DEMO SIMULATION READY • NO CARD REQUIRED</span>
                   </div>
                 </div>

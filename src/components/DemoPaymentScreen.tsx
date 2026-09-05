@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { CartItem, CustomerDetails, Order, ViewType } from '../types';
-import { saveOrder, MockUser } from '../lib/supabase';
+import { saveOrder } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import { HoverBorderGradient } from './ui/hover-border-gradient';
 import {
@@ -27,7 +27,7 @@ interface DemoPaymentScreenProps {
   subtotal: number;
   shipping: number;
   total: number;
-  currentUser: User | MockUser | null;
+  currentUser: User | null;
   onPaymentSuccess: (order: Order) => void;
   onCancel: () => void;
   setCurrentView: (view: ViewType) => void;
@@ -58,6 +58,7 @@ export const DemoPaymentScreen: React.FC<DemoPaymentScreenProps> = ({
   const [progressPercent, setProgressPercent] = useState(0);
   const [generatedOrder, setGeneratedOrder] = useState<Order | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const currency = cart[0]?.product.currency || '₹';
 
   // Generate a consistent Demo Session ID for the QR code
   const demoSessionToken = useRef(
@@ -100,7 +101,7 @@ export const DemoPaymentScreen: React.FC<DemoPaymentScreenProps> = ({
       user_id: currentUser?.id,
       items: [...cart],
       amount: total,
-      currency: '$',
+      currency: currency || '₹',
       customer,
       payment_gateway_order_id: demoSessionToken,
       payment_id: demoTxnId,
@@ -372,12 +373,12 @@ export const DemoPaymentScreen: React.FC<DemoPaymentScreenProps> = ({
                     <div>
                       <span className="text-white font-bold block">{item.product.name}</span>
                       <span className="text-[10px] text-[#888]">
-                        SIZE: {item.size} | COLOR: {item.color || 'VOID BLACK'} | QTY: {item.quantity}
+                        SIZE: {item.size} | COLOR: {item.color || 'NIGHT REFLECTION'} | QTY: {item.quantity}
                       </span>
                     </div>
                   </div>
                   <span className="text-white font-bold">
-                    ${(item.product.price * item.quantity).toFixed(2)}
+                    {item.product.currency}{((item.product.price * item.quantity) % 1 === 0 ? (item.product.price * item.quantity).toLocaleString() : (item.product.price * item.quantity).toFixed(2))}
                   </span>
                 </div>
               ))}
@@ -569,14 +570,14 @@ export const DemoPaymentScreen: React.FC<DemoPaymentScreenProps> = ({
                         {item.product.name}
                       </h5>
                       <p className="text-[10px] text-[#888]">
-                        SIZE: {item.size} | COLOR: {item.color || 'VOID BLACK'}
+                        SIZE: {item.size} | COLOR: {item.color || 'NIGHT REFLECTION'}
                       </p>
                       <p className="text-[10px] text-[#aaa]">
-                        QTY: {item.quantity} × ${item.product.price}
+                        QTY: {item.quantity} × {item.product.currency}{item.product.price % 1 === 0 ? item.product.price.toLocaleString() : item.product.price.toFixed(2)}
                       </p>
                     </div>
                     <span className="font-mono text-xs font-bold text-white shrink-0">
-                      ${(item.product.price * item.quantity).toFixed(2)}
+                      {item.product.currency}{((item.product.price * item.quantity) % 1 === 0 ? (item.product.price * item.quantity).toLocaleString() : (item.product.price * item.quantity).toFixed(2))}
                     </span>
                   </div>
                 ))}
@@ -586,16 +587,16 @@ export const DemoPaymentScreen: React.FC<DemoPaymentScreenProps> = ({
               <div className="space-y-2 font-mono text-xs text-[#888] pb-4 mb-4 border-b border-[#1c1c22]">
                 <div className="flex justify-between">
                   <span>SUBTOTAL</span>
-                  <span className="text-white">${subtotal.toFixed(2)}</span>
+                  <span className="text-white">{currency}{subtotal % 1 === 0 ? subtotal.toLocaleString() : subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>SHIPPING</span>
-                  <span>{shipping === 0 ? 'FREE // ARCHIVE PASS' : `$${shipping.toFixed(2)}`}</span>
+                  <span>{shipping === 0 ? 'FREE // ARCHIVE PASS' : `${currency}${shipping.toFixed(2)}`}</span>
                 </div>
                 <div className="flex justify-between text-white font-bold pt-2 border-t border-[#1c1c22] text-sm">
                   <span>TOTAL</span>
                   <span className="font-mono text-lg text-[#00ff88]">
-                    ${total.toFixed(2)}
+                    {currency}{total % 1 === 0 ? total.toLocaleString() : total.toFixed(2)}
                   </span>
                 </div>
               </div>

@@ -1,64 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { supabase, isSupabaseConfigured, getOAuthRedirectInfo, getCurrentUser } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
-import { ShieldCheck, ShieldAlert, ChevronDown, ChevronUp, RefreshCw, LogIn, ExternalLink } from 'lucide-react';
+import { ShieldCheck, ChevronDown, ChevronUp, RefreshCw, ExternalLink } from 'lucide-react';
 
 interface AuthDebugPanelProps {
-  user: User | any | null;
+  user: User | null;
 }
 
 export const AuthDebugPanel: React.FC<AuthDebugPanelProps> = ({ user }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [authState, setAuthState] = useState<string>('INITIALIZING');
-  const [googleProviderStatus, setGoogleProviderStatus] = useState<'CONFIGURED' | 'UNKNOWN'>('UNKNOWN');
   const [clientStatus, setClientStatus] = useState<'CONNECTED' | 'ERROR'>('CONNECTED');
 
-  const supabaseUrlConfigured = Boolean(
-    import.meta.env.VITE_SUPABASE_URL || 'https://myntjfzjfyzyqnlmwsrd.supabase.co'
-  );
-  const publishableKeyConfigured = Boolean(
-    import.meta.env.VITE_SUPABASE_ANON_KEY || isSupabaseConfigured
-  );
+  const oauthInfo = getOAuthRedirectInfo();
 
-  const redirectUrl = typeof window !== 'undefined' ? window.location.origin : 'N/A';
-
-  useEffect(() => {
-    // Check Supabase connection and Google Provider status
+  const refreshSessionState = async () => {
     if (supabase) {
-      setClientStatus('CONNECTED');
-      supabase.auth.getSession().then(({ data, error }) => {
+      try {
+        const { data, error } = await supabase.auth.getSession();
         if (error) {
           setAuthState(`ERROR: ${error.message}`);
-        } else if (data.session) {
-          setAuthState('LOGGED IN (SESSION ACTIVE)');
+        } else if (data?.session) {
+          setAuthState('ACTIVE SESSION');
         } else {
-          setAuthState('READY (LOGGED OUT)');
+          setAuthState('NO SESSION (ANONYMOUS)');
         }
-      }).catch(() => {
-        setClientStatus('ERROR');
-        setAuthState('CONNECTION FAILED');
-      });
+      } catch (err: any) {
+        setAuthState(`FAILED: ${err?.message || 'Unknown'}`);
+      }
+    }
+  };
 
-      // Check if google provider is configured in Supabase settings
-      fetch('https://myntjfzjfyzyqnlmwsrd.supabase.co/auth/v1/settings', {
-        headers: {
-          apikey:
-            import.meta.env.VITE_SUPABASE_ANON_KEY ||
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15bnRqZnpqZnl6eXFubG13c3JkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg1MjcwNjcsImV4cCI6MjEwNDEwMzA2N30.y00M-47lxwi-cLu4LtuqZB6HaN8nWK0tW0l0E-3QMpE',
-        },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data?.external?.google === true) {
-            setGoogleProviderStatus('CONFIGURED');
-          }
-        })
-        .catch(() => {
-          setGoogleProviderStatus('UNKNOWN');
-        });
+  useEffect(() => {
+    if (supabase) {
+      setClientStatus('CONNECTED');
+      refreshSessionState();
 
       const { data } = supabase.auth.onAuthStateChange((event, session) => {
-        setAuthState(session ? `LOGGED IN (${event})` : `LOGGED OUT (${event})`);
+        setAuthState(session ? `ACTIVE (${event})` : `UNAUTHENTICATED (${event})`);
       });
 
       return () => {
@@ -108,13 +87,22 @@ export const AuthDebugPanel: React.FC<AuthDebugPanelProps> = ({ user }) => {
                 AUTH DIAGNOSTIC PANEL
               </span>
             </div>
-            <button
-              id="btn-toggle-auth-debug-close"
-              onClick={() => setIsOpen(false)}
-              className="p-0.5 text-[#777] hover:text-white cursor-pointer"
-            >
-              <ChevronDown className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={refreshSessionState}
+                className="p-0.5 text-[#777] hover:text-[#00ff88] transition-colors cursor-pointer"
+                title="Refresh Session"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
+              <button
+                id="btn-toggle-auth-debug-close"
+                onClick={() => setIsOpen(false)}
+                className="p-0.5 text-[#777] hover:text-white cursor-pointer"
+              >
+                <ChevronDown className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {/* Diagnostic Metrics */}
@@ -133,31 +121,11 @@ export const AuthDebugPanel: React.FC<AuthDebugPanelProps> = ({ user }) => {
               </span>
             </div>
 
-            {/* Supabase URL */}
+            {/* Config Status */}
             <div className="flex justify-between items-center py-0.5">
-              <span className="text-[#888]">Supabase URL:</span>
+              <span className="text-[#888]">Credentials:</span>
               <span className="text-[#00ff88] font-bold">
-                {supabaseUrlConfigured ? 'CONFIGURED' : 'MISSING'}
-              </span>
-            </div>
-
-            {/* Publishable Key */}
-            <div className="flex justify-between items-center py-0.5">
-              <span className="text-[#888]">Publishable Key:</span>
-              <span className="text-[#00ff88] font-bold">
-                {publishableKeyConfigured ? 'CONFIGURED' : 'MISSING'}
-              </span>
-            </div>
-
-            {/* Google Provider */}
-            <div className="flex justify-between items-center py-0.5">
-              <span className="text-[#888]">Google Provider:</span>
-              <span
-                className={`font-bold ${
-                  googleProviderStatus === 'CONFIGURED' ? 'text-[#00ff88]' : 'text-amber-400'
-                }`}
-              >
-                {googleProviderStatus}
+                {isSupabaseConfigured ? 'READY' : 'UNCONFIGURED'}
               </span>
             </div>
 
@@ -169,23 +137,31 @@ export const AuthDebugPanel: React.FC<AuthDebugPanelProps> = ({ user }) => {
                   user ? 'text-[#00ff88]' : 'text-[#888]'
                 }`}
               >
-                {user ? 'LOGGED IN' : 'LOGGED OUT'}
+                {user ? 'AUTHENTICATED' : 'ANONYMOUS'}
               </span>
             </div>
 
             {/* Current User */}
             <div className="flex justify-between items-center py-0.5">
               <span className="text-[#888]">Current User:</span>
-              <span className="text-white font-medium truncate max-w-[170px]" title={user?.email || 'Not authenticated'}>
-                {user?.email || 'Not authenticated'}
+              <span className="text-white font-medium truncate max-w-[170px]" title={user?.email || 'None'}>
+                {user?.email || 'None (Guest Rider)'}
               </span>
             </div>
 
-            {/* OAuth Redirect */}
+            {/* Environment */}
+            <div className="flex justify-between items-center py-0.5">
+              <span className="text-[#888]">Runtime Environment:</span>
+              <span className="text-white font-medium">
+                {oauthInfo.isAiStudioDev ? 'Cloud Run Dev' : oauthInfo.isIframe ? 'iFrame' : 'Standalone'}
+              </span>
+            </div>
+
+            {/* OAuth Redirect Destination */}
             <div className="flex flex-col py-0.5 border-t border-[#1c1c22] pt-1.5">
-              <span className="text-[#888]">OAuth Redirect:</span>
-              <span className="text-[#a4a8ad] text-[9px] break-all truncate" title={redirectUrl}>
-                {redirectUrl}
+              <span className="text-[#888]">OAuth Redirect Destination:</span>
+              <span className="text-[#00ff88] text-[9px] break-all" title={oauthInfo.redirectUrl}>
+                {oauthInfo.redirectUrl}
               </span>
             </div>
 
@@ -199,8 +175,9 @@ export const AuthDebugPanel: React.FC<AuthDebugPanelProps> = ({ user }) => {
           </div>
 
           {/* Security Guarantee Note */}
-          <div className="text-[8px] text-[#666] border-t border-[#1c1c22] pt-1.5">
-            [SAFE DEBUG MODE] No secrets, private keys, or client secrets are exposed.
+          <div className="text-[8px] text-[#666] border-t border-[#1c1c22] pt-1.5 flex items-center justify-between">
+            <span>PKCE Flow Active</span>
+            <span>Zero Mock Users</span>
           </div>
         </div>
       )}

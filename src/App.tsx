@@ -21,11 +21,22 @@ import { CommunityPage } from './views/CommunityPage';
 import { CheckoutPage } from './views/CheckoutPage';
 import { OrderConfirmationPage } from './views/OrderConfirmationPage';
 import { MyOrdersPage } from './views/MyOrdersPage';
-import { getCurrentUser, supabase, MockUser } from './lib/supabase';
+import { BrandIntroCinematic } from './components/BrandIntroCinematic';
+import { getCurrentUser, supabase } from './lib/supabase';
 import type { User } from '@supabase/supabase-js';
 
 export default function App() {
-  const [currentView, setCurrentView] = useState<ViewType>('home');
+  // Restore view if returning from OAuth redirect / authentication
+  const [currentView, setCurrentView] = useState<ViewType>(() => {
+    if (typeof window !== 'undefined') {
+      const savedView = sessionStorage.getItem('undergroundz_auth_return_view');
+      if (savedView) {
+        sessionStorage.removeItem('undergroundz_auth_return_view');
+        return savedView as ViewType;
+      }
+    }
+    return 'home';
+  });
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [selectedProduct, setSelectedProduct] = useState<ProductItem>(PRODUCTS[0]);
   
@@ -40,7 +51,7 @@ export default function App() {
   });
 
   const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>(INITIAL_COMMUNITY_POSTS);
-  const [user, setUser] = useState<User | MockUser | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
 
   // Modals & Drawers
@@ -59,38 +70,153 @@ export default function App() {
     }
   }, [cart]);
 
-  // Auth synchronization
+  // Auth synchronization & Session Lifecycle Handler
   useEffect(() => {
-    async function initAuth() {
-      const currentUser = await getCurrentUser();
-      setUser(currentUser);
-    }
-    initAuth();
-
-    const handleAuthEvent = () => {
-      initAuth();
-    };
-    window.addEventListener('undergroundz-auth-change', handleAuthEvent);
-
     let authSubscription: { unsubscribe: () => void } | null = null;
+
+    async function initSessionAndCallbacks() {
+      // 1. Check if this window was opened as a popup callback
+      if (typeof window !== 'undefined' && window.opener && window.opener !== window) {
+        const url = new URL(window.location.href);
+        const code = url.searchParams.get('code');
+        const hash = window.location.hash;
+
+        if (code && supabase) {
+          try {
+            await supabase.auth.exchangeCodeForSession(code);
+            window.opener.postMessage({ type: 'UNDERGROUNDZ_AUTH_SUCCESS' }, '*');
+            setTimeout(() => window.close(), 300);
+            return;
+          } catch (e) {
+            console.error('[Undergroundz Auth] Popup code exchange failed:', e);
+          }
+        } else if (hash.includes('access_token') || hash.includes('refresh_token')) {
+          window.opener.postMessage({ type: 'UNDERGROUNDZ_AUTH_SUCCESS' }, '*');
+          setTimeout(() => window.close(), 300);
+          return;
+        }
+      }
+
+      // 2. PKCE code callback handling in primary window
+      if (typeof window !== 'undefined' && supabase) {
+        const url = new URL(window.location.href);
+        const code = url.searchParams.get('code');
+        if (code) {
+          try {
+            const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+            if (!error && data?.session) {
+              setUser(data.session.user);
+              // Clean up 'code' param from address bar without page reload
+              url.searchParams.delete('code');
+              window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+
+              // Restore view if saved
+              const savedView = sessionStorage.getItem('undergroundz_auth_return_view');
+              if (savedView) {
+                sessionStorage.removeItem('undergroundz_auth_return_view');
+                setCurrentView(savedView as ViewType);
+              }
+            }
+          } catch (err) {
+            console.error('[Undergroundz Auth] PKCE exchange error:', err);
+          }
+        }
+      }
+
+      // 3. Initial session retrieval
+      if (supabase) {
+        try {
+          const { data, error } = await supabase.auth.getSession();
+          if (!error && data?.session?.user) {
+            setUser(data.session.user);
+          } else {
+            const currentUser = await getCurrentUser();
+            setUser(currentUser);
+          }
+        } catch {
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
+    }
+
+    initSessionAndCallbacks();
+
+    // 4. Supabase onAuthStateChange Lifecycle
     if (supabase) {
-      const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-        setUser(session?.user || null);
+      const { data } = supabase.auth.onAuthStateChange((event, session) => {
+        console.info(`[Undergroundz Auth] Lifecycle Event: ${event}`);
+
+        switch (event) {
+          case 'INITIAL_SESSION':
+          case 'TOKEN_REFRESHED':
+          case 'USER_UPDATED':
+            setUser(session?.user || null);
+            break;
+
+          case 'SIGNED_IN':
+            setUser(session?.user || null);
+            setIsAccountOpen(false);
+            // Restore return view
+            if (typeof window !== 'undefined') {
+              const savedView = sessionStorage.getItem('undergroundz_auth_return_view');
+              if (savedView) {
+                sessionStorage.removeItem('undergroundz_auth_return_view');
+                setCurrentView(savedView as ViewType);
+              }
+            }
+            break;
+
+          case 'SIGNED_OUT':
+            setUser(null);
+            break;
+
+          default:
+            setUser(session?.user || null);
+            break;
+        }
       });
       authSubscription = data.subscription;
     }
 
+    // 5. Popup message handler (when popup completes auth and signals main window)
+    const handlePopupMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'UNDERGROUNDZ_AUTH_SUCCESS' && supabase) {
+        supabase.auth.getSession().then(({ data }) => {
+          if (data?.session?.user) {
+            setUser(data.session.user);
+            setIsAccountOpen(false);
+            const savedView = sessionStorage.getItem('undergroundz_auth_return_view');
+            if (savedView) {
+              sessionStorage.removeItem('undergroundz_auth_return_view');
+              setCurrentView(savedView as ViewType);
+            }
+          }
+        });
+      }
+    };
+    window.addEventListener('message', handlePopupMessage);
+
+    // 6. Custom local auth change event listener
+    const handleLocalAuthEvent = async () => {
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+    };
+    window.addEventListener('undergroundz-auth-change', handleLocalAuthEvent);
+
     return () => {
-      window.removeEventListener('undergroundz-auth-change', handleAuthEvent);
       if (authSubscription) {
         authSubscription.unsubscribe();
       }
+      window.removeEventListener('message', handlePopupMessage);
+      window.removeEventListener('undergroundz-auth-change', handleLocalAuthEvent);
     };
   }, []);
 
   // Cart operations
   const handleAddToCart = (product: ProductItem, size: string, color?: string) => {
-    const chosenColor = color || product.availableColors?.[0]?.name || 'VOID BLACK';
+    const chosenColor = color || product.availableColors?.[0]?.name || 'NIGHT REFLECTION';
     setCart((prev) => {
       const existing = prev.find(
         (item) => item.product.id === product.id && item.size === size && item.color === chosenColor
@@ -108,7 +234,7 @@ export default function App() {
   };
 
   const handleBuyNow = (product: ProductItem, size: string, color?: string) => {
-    const chosenColor = color || product.availableColors?.[0]?.name || 'VOID BLACK';
+    const chosenColor = color || product.availableColors?.[0]?.name || 'NIGHT REFLECTION';
     setCart((prev) => {
       const existing = prev.find(
         (item) => item.product.id === product.id && item.size === size && item.color === chosenColor
@@ -118,7 +244,14 @@ export default function App() {
       }
       return [...prev, { product, quantity: 1, size, color: chosenColor }];
     });
-    setCurrentView('checkout');
+    if (!user) {
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('undergroundz_auth_return_view', 'checkout');
+      }
+      setIsAccountOpen(true);
+    } else {
+      setCurrentView('checkout');
+    }
   };
 
   const handleUpdateQuantity = (productId: string, size: string, delta: number) => {
@@ -160,17 +293,27 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#070708] text-[#e2e2e2] font-body relative selection:bg-[#ff3300] selection:text-white">
+      {/* 4K Cinematic Brand Intro */}
+      {currentView === 'intro' && (
+        <BrandIntroCinematic
+          onComplete={() => setCurrentView('home')}
+          autoPlay={true}
+        />
+      )}
+
       {/* Top Header */}
-      <NavigationHeader
-        currentView={currentView}
-        setCurrentView={setCurrentView}
-        cart={cart}
-        setIsCartOpen={setIsCartOpen}
-        setIsMenuOpen={setIsMenuOpen}
-        onSelectCategory={(cat) => setSelectedCategory(cat)}
-        onOpenAccount={() => setIsAccountOpen(true)}
-        user={user}
-      />
+      {currentView !== 'intro' && (
+        <NavigationHeader
+          currentView={currentView}
+          setCurrentView={setCurrentView}
+          cart={cart}
+          setIsCartOpen={setIsCartOpen}
+          setIsMenuOpen={setIsMenuOpen}
+          onSelectCategory={(cat) => setSelectedCategory(cat)}
+          onOpenAccount={() => setIsAccountOpen(true)}
+          user={user}
+        />
+      )}
 
       {/* Main View Router */}
       {currentView === 'home' && (
@@ -233,11 +376,13 @@ export default function App() {
       )}
 
       {/* Mobile Navigation Bar */}
-      <BottomNavBar
-        currentView={currentView}
-        setCurrentView={setCurrentView}
-        onOpenSearch={() => setIsSearchOpen(true)}
-      />
+      {currentView !== 'intro' && (
+        <BottomNavBar
+          currentView={currentView}
+          setCurrentView={setCurrentView}
+          onOpenSearch={() => setIsSearchOpen(true)}
+        />
+      )}
 
       {/* Modals & Overlays */}
       <NavigationDrawer
@@ -257,7 +402,17 @@ export default function App() {
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveCartItem}
         onClearCart={handleClearCart}
-        onProceedToCheckout={() => setCurrentView('checkout')}
+        onProceedToCheckout={() => {
+          setIsCartOpen(false);
+          if (!user) {
+            if (typeof window !== 'undefined') {
+              sessionStorage.setItem('undergroundz_auth_return_view', 'checkout');
+            }
+            setIsAccountOpen(true);
+          } else {
+            setCurrentView('checkout');
+          }
+        }}
       />
 
       <SearchModal
@@ -280,7 +435,7 @@ export default function App() {
       />
 
       {/* Development Auth Diagnostic Panel */}
-      <AuthDebugPanel user={user} />
+      {currentView !== 'intro' && <AuthDebugPanel user={user} />}
     </div>
   );
 }

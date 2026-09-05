@@ -16,11 +16,12 @@ import {
   Shield,
   Layers,
   LogOut,
+  Film,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "../lib/utils";
 import type { User } from "@supabase/supabase-js";
-import { MockUser, signOut } from "../lib/supabase";
+import { signOut } from "../lib/supabase";
 import { SidebarDemo } from "./SidebarDemo";
 import { RIDER_MANIFESTO_LINES } from "./RiderManifestoBanner";
 
@@ -31,7 +32,7 @@ interface NavigationDrawerProps {
   setCurrentView: (view: ViewType) => void;
   onSelectCategory: (category: string) => void;
   onOpenAccount?: () => void;
-  user?: User | MockUser | null;
+  user?: User | null;
 }
 
 export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
@@ -47,11 +48,11 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
   const [showDemoModal, setShowDemoModal] = useState(false);
   const [manifestoIdx, setManifestoIdx] = useState(0);
 
-  // Cycle through rider lines every 5 seconds with slow smooth transition
+  // Cycle through rider lines every 10 seconds with smooth transition
   React.useEffect(() => {
     const timer = setInterval(() => {
       setManifestoIdx((prev) => (prev + 1) % RIDER_MANIFESTO_LINES.length);
-    }, 5000);
+    }, 10000);
     return () => clearInterval(timer);
   }, []);
 
@@ -67,6 +68,23 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
   };
 
   const navLinks = [
+    {
+      label: "4K Brand Intro",
+      badge: "VFX",
+      active: currentView === "intro",
+      icon: (
+        <Film
+          className={cn(
+            "h-5 w-5 shrink-0 transition-colors",
+            currentView === "intro" ? "text-red-500" : "text-neutral-400 group-hover/sidebar:text-white"
+          )}
+        />
+      ),
+      onClick: () => {
+        setCurrentView("intro");
+        onClose();
+      },
+    },
     {
       label: "System Index",
       badge: "01",
@@ -215,35 +233,35 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
 
                     {/* 5s Animated Manifesto Broadcast in Sidebar */}
                     {open && (
-                      <div className="mb-4 p-2.5 rounded bg-[#121217] border border-[#23232c] overflow-hidden relative select-none">
-                        <div className="flex items-center justify-between text-[9px] font-mono text-[#777] mb-1">
-                          <span className="text-[#00ff88] flex items-center gap-1 font-semibold">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#00ff88] animate-pulse" />
-                            RIDER TRANSMISSION
+                      <div className="mb-4 p-3 rounded-none bg-[#101014] border border-[#202026] overflow-hidden relative select-none">
+                        <div className="flex items-center justify-between text-[10px] font-body text-[#71717a] mb-1.5">
+                          <span className="text-white flex items-center gap-1.5 font-semibold tracking-wider uppercase">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#9e1b24]" />
+                            RIDER STATEMENT
                           </span>
-                          <span>[0{manifestoIdx + 1}/05]</span>
+                          <span className="tracking-wider">0{manifestoIdx + 1}/05</span>
                         </div>
                         <div className="min-h-[38px] flex items-center">
                           <AnimatePresence mode="wait">
                             <motion.p
                               key={manifestoIdx}
-                              initial={{ opacity: 0, y: 4, filter: "blur(6px)" }}
+                              initial={{ opacity: 0, y: 4, filter: "blur(4px)" }}
                               animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                              exit={{ opacity: 0, y: -4, filter: "blur(6px)" }}
-                              transition={{ duration: 0.9, ease: [0.25, 0.1, 0.25, 1.0] }}
-                              className="font-manifesto text-xs text-white uppercase font-bold leading-tight"
+                              exit={{ opacity: 0, y: -4, filter: "blur(3px)" }}
+                              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                              className="font-display text-sm text-white uppercase font-bold tracking-tight leading-snug"
                             >
                               "{RIDER_MANIFESTO_LINES[manifestoIdx]}"
                             </motion.p>
                           </AnimatePresence>
                         </div>
-                        <div className="w-full h-0.5 bg-white/10 mt-1.5 overflow-hidden">
+                        <div className="w-full h-[2px] bg-white/10 mt-2 overflow-hidden">
                           <motion.div
                             key={manifestoIdx}
                             initial={{ width: "0%" }}
                             animate={{ width: "100%" }}
-                            transition={{ duration: 5, ease: "linear" }}
-                            className="h-full bg-white/80"
+                            transition={{ duration: 10, ease: "linear" }}
+                            className="h-full bg-white/70"
                           />
                         </div>
                       </div>
@@ -256,8 +274,8 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
                           key={idx}
                           link={link}
                           className={cn(
-                            "hover:bg-[#18181c] text-neutral-300 hover:text-white transition-all",
-                            link.active && "bg-[#18181c] text-white border-l-2 border-white pl-2"
+                            "hover:bg-[#18181c] text-neutral-300 hover:text-white transition-all font-body font-medium",
+                            link.active && "bg-[#18181c] text-white border-l-2 border-white pl-2 font-semibold"
                           )}
                         />
                       ))}
@@ -267,12 +285,12 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
                     {open && (
                       <div className="mt-5 pt-4 border-t border-[#1e1e24] px-1">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-[10px] font-mono uppercase tracking-wider text-[#777]">
-                            COLLECTION SUB-INDEX
+                          <span className="text-[10px] font-body uppercase tracking-wider text-[#8e8e98] font-semibold">
+                            COLLECTIONS INDEX
                           </span>
-                          <span className="text-[9px] font-mono text-[#555]">[4 TIERS]</span>
+                          <span className="text-[10px] font-body text-[#666]">4 TIERS</span>
                         </div>
-                        <div className="flex flex-col gap-1 font-mono text-xs">
+                        <div className="flex flex-col gap-1 font-body text-xs">
                           {["ALL", "HOODIES", "TEES", "SHIRTS", "KNITS"].map((cat) => (
                             <button
                               key={cat}
@@ -281,7 +299,7 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
                                 setCurrentView("collection");
                                 onClose();
                               }}
-                              className="text-left px-2.5 py-1.5 rounded text-neutral-400 hover:text-white hover:bg-[#16161a] transition-colors flex items-center justify-between cursor-pointer group"
+                              className="text-left px-2.5 py-1.5 rounded-none text-neutral-400 hover:text-white hover:bg-[#16161a] transition-colors flex items-center justify-between cursor-pointer group"
                             >
                               <span className="group-hover:translate-x-1 transition-transform">
                                 — {cat}
@@ -300,13 +318,13 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
                       <div className="mt-4 pt-3 border-t border-[#1e1e24] px-1">
                         <button
                           onClick={() => setShowDemoModal(true)}
-                          className="w-full flex items-center justify-between p-2 rounded bg-[#131318] hover:bg-[#1b1b22] border border-[#272732] text-xs font-mono text-neutral-300 hover:text-white transition-colors cursor-pointer"
+                          className="w-full flex items-center justify-between p-2 rounded-none bg-[#111115] hover:bg-[#18181f] border border-[#22222a] text-xs font-body font-medium text-neutral-300 hover:text-white transition-colors cursor-pointer"
                         >
                           <div className="flex items-center gap-2">
-                            <Layers className="w-3.5 h-3.5 text-[#00ff88]" />
-                            <span>ACETERNITY SIDEBAR DEMO</span>
+                            <Layers className="w-3.5 h-3.5 text-[#9e1b24]" />
+                            <span className="tracking-wide uppercase text-[11px]">SIDEBAR SYSTEM VIEW</span>
                           </div>
-                          <span className="text-[10px] text-[#888]">VIEW</span>
+                          <span className="text-[10px] text-[#888]">EXPAND</span>
                         </button>
                       </div>
                     )}
