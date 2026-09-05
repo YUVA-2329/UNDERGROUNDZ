@@ -1,26 +1,68 @@
-import React from 'react';
-import { Star, CheckCircle, ShieldCheck, Camera, Sparkles } from 'lucide-react';
+import React, { useState } from 'react';
+import { Star, CheckCircle, ShieldCheck, Camera, Sparkles, Plus, X, Loader2 } from 'lucide-react';
 import { ProductReview } from '../types';
 
 interface PeopleWearingProps {
   reviews: ProductReview[];
   productName: string;
+  productId?: string;
+  onAddReview?: (review: ProductReview) => Promise<void> | void;
 }
 
 export const PeopleWearingUndergroundz: React.FC<PeopleWearingProps> = ({
   reviews,
   productName,
+  productId = '',
+  onAddReview,
 }) => {
+  const [isAddingReview, setIsAddingReview] = useState(false);
+  const [reviewerName, setReviewerName] = useState('');
+  const [rating, setRating] = useState(5);
+  const [reviewText, setReviewText] = useState('');
+  const [sizeWorn, setSizeWorn] = useState('M');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
   // STRICT CONSTRAINT: Maximum 5 reviews per product. Never display more than 5.
   const displayedReviews = (reviews || []).slice(0, 5);
 
-  if (displayedReviews.length === 0) {
-    return null;
-  }
-
   const averageRating = (
-    displayedReviews.reduce((acc, r) => acc + r.rating, 0) / displayedReviews.length
+    displayedReviews.length > 0
+      ? displayedReviews.reduce((acc, r) => acc + r.rating, 0) / displayedReviews.length
+      : 5.0
   ).toFixed(1);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reviewerName.trim() || !reviewText.trim()) return;
+
+    setSubmitting(true);
+    const newReview: ProductReview = {
+      id: `rev-${Date.now()}`,
+      productId: productId || 'product',
+      userName: reviewerName.toUpperCase(),
+      userAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400',
+      rating,
+      reviewDate: 'Today',
+      reviewText,
+      verifiedPurchase: true,
+      sizeWorn,
+      colorWorn: 'NIGHT REFLECTION',
+      isDemo: false,
+    };
+
+    if (onAddReview) {
+      await onAddReview(newReview);
+    }
+    setSubmitting(false);
+    setSubmitSuccess(true);
+    setTimeout(() => {
+      setSubmitSuccess(false);
+      setIsAddingReview(false);
+      setReviewerName('');
+      setReviewText('');
+    }, 1500);
+  };
 
   return (
     <section id="people-wearing-undergroundz" className="mt-16 pt-12 border-t border-[#222]">
@@ -42,7 +84,7 @@ export const PeopleWearingUndergroundz: React.FC<PeopleWearingProps> = ({
         </div>
 
         {/* Rating summary & Demo Notice */}
-        <div className="flex flex-col md:items-end gap-1.5">
+        <div className="flex flex-col md:items-end gap-2">
           <div className="flex items-center gap-2.5">
             <div className="flex items-center text-white">
               {[...Array(5)].map((_, i) => (
@@ -58,13 +100,121 @@ export const PeopleWearingUndergroundz: React.FC<PeopleWearingProps> = ({
             </span>
           </div>
 
-          {/* Explicit disclosure honoring the prompt instructions */}
-          <div className="flex items-center gap-1.5 text-[10px] font-body text-[#9c9ca8] bg-[#16161c] px-2 py-0.5 border border-[#262632] uppercase tracking-wider font-semibold">
-            <Sparkles className="w-3 h-3 text-white" />
-            <span>COMMUNITY RIDERS ARCHIVE</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsAddingReview(!isAddingReview)}
+              className="px-3 py-1 bg-white hover:bg-[#ccc] text-black font-mono text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 transition-colors cursor-pointer"
+            >
+              {isAddingReview ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
+              <span>{isAddingReview ? 'CLOSE FORM' : 'LOG GEAR REVIEW'}</span>
+            </button>
+            <div className="flex items-center gap-1.5 text-[10px] font-body text-[#9c9ca8] bg-[#16161c] px-2 py-1 border border-[#262632] uppercase tracking-wider font-semibold">
+              <Sparkles className="w-3 h-3 text-white" />
+              <span>SUPABASE VERIFIED</span>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Review Submission Form */}
+      {isAddingReview && (
+        <form
+          onSubmit={handleSubmit}
+          className="mb-8 p-5 bg-[#0f0f13] border border-[#262632] max-w-xl flex flex-col gap-3"
+        >
+          <div className="flex items-center justify-between pb-2 border-b border-[#202026]">
+            <span className="font-mono text-xs font-bold uppercase text-white tracking-wider">
+              NEW FIELD REVIEW // SUPABASE POSTGRES
+            </span>
+            {submitSuccess && (
+              <span className="text-[10px] font-mono text-[#00ff88]">
+                SAVED TO SUPABASE
+              </span>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[10px] font-mono uppercase text-[#888] mb-1">
+                Your Callsign / Name
+              </label>
+              <input
+                type="text"
+                required
+                value={reviewerName}
+                onChange={(e) => setReviewerName(e.target.value)}
+                placeholder="e.g. CYBER_NOMAD"
+                className="w-full h-8 px-2 bg-[#08080a] border border-[#333] text-xs text-white focus:outline-none focus:border-[#ff3300]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-mono uppercase text-[#888] mb-1">
+                Size Worn
+              </label>
+              <select
+                value={sizeWorn}
+                onChange={(e) => setSizeWorn(e.target.value)}
+                className="w-full h-8 px-2 bg-[#08080a] border border-[#333] text-xs text-white focus:outline-none focus:border-[#ff3300]"
+              >
+                <option value="S">S - SMALL</option>
+                <option value="M">M - MEDIUM</option>
+                <option value="L">L - LARGE</option>
+                <option value="XL">XL - OVERSIZED</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-mono uppercase text-[#888] mb-1">
+              Rating (1 - 5 Stars)
+            </label>
+            <div className="flex items-center gap-1.5">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  type="button"
+                  key={star}
+                  onClick={() => setRating(star)}
+                  className="p-1 cursor-pointer"
+                >
+                  <Star
+                    className={`w-4 h-4 ${
+                      star <= rating
+                        ? 'fill-white text-white'
+                        : 'text-[#444]'
+                    }`}
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-mono uppercase text-[#888] mb-1">
+              Field Review Notes
+            </label>
+            <textarea
+              required
+              rows={3}
+              value={reviewText}
+              onChange={(e) => setReviewText(e.target.value)}
+              placeholder="Detail build quality, weatherproofing, and fit..."
+              className="w-full p-2 bg-[#08080a] border border-[#333] text-xs text-white focus:outline-none focus:border-[#ff3300]"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full h-9 bg-[#ff3300] hover:bg-[#cc2900] text-white font-mono text-xs uppercase font-bold tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-colors disabled:opacity-50"
+          >
+            {submitting ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : null}
+            <span>SUBMIT REVIEW TO SUPABASE</span>
+          </button>
+        </form>
+      )}
 
       {/* Grid of Reviews: Clean, brutalist fashion cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

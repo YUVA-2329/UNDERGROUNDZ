@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ProductItem, ViewType } from '../types';
+import { ProductItem, ViewType, ProductReview } from '../types';
 import { PRODUCT_REVIEWS } from '../data';
 import { ProductImageGallery } from '../components/ProductImageGallery';
 import { PeopleWearingUndergroundz } from '../components/PeopleWearingUndergroundz';
 import { Star, Shield, Zap, Check, AlertCircle, ShoppingBag } from 'lucide-react';
 import { HoverBorderGradient } from '../components/ui/hover-border-gradient';
+import { fetchProductReviews, submitProductReview, getCurrentUser } from '../lib/supabase';
 
 interface ProductDetailPageProps {
   product: ProductItem;
@@ -38,7 +39,21 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     setSelectedColor(product.availableColors?.[0]?.name || 'NIGHT REFLECTION');
   }, [product]);
 
-  const reviews = PRODUCT_REVIEWS[product.id] || [];
+  const [reviews, setReviews] = useState<ProductReview[]>(PRODUCT_REVIEWS[product.id] || []);
+
+  useEffect(() => {
+    fetchProductReviews(product.id).then((fetched) => {
+      if (fetched && fetched.length > 0) {
+        setReviews(fetched);
+      }
+    });
+  }, [product.id]);
+
+  const handleAddReview = async (newReview: ProductReview) => {
+    setReviews((prev) => [newReview, ...prev.filter((r) => r.id !== newReview.id)].slice(0, 5));
+    const user = await getCurrentUser();
+    await submitProductReview(newReview, user?.id);
+  };
 
   const handleAdd = () => {
     if (!selectedSize) {
@@ -436,6 +451,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
         <PeopleWearingUndergroundz
           reviews={reviews}
           productName={product.name}
+          productId={product.id}
+          onAddReview={handleAddReview}
         />
       </div>
 

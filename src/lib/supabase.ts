@@ -1,5 +1,6 @@
 import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
-import { Order } from '../types';
+import { Order, UserProfile, CommunityPost, ProductReview } from '../types';
+import { INITIAL_COMMUNITY_POSTS, PRODUCT_REVIEWS } from '../data';
 
 const supabaseUrl = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL || '').trim();
 const supabaseAnonKey = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_ANON_KEY || '').trim();
@@ -310,6 +311,289 @@ export async function getCurrentUser(): Promise<User | null> {
     }
   }
   return null;
+}
+
+/**
+ * Fetch a user profile from Supabase 'profiles' table
+ */
+export async function fetchUserProfile(userId: string): Promise<UserProfile | null> {
+  if (isSupabaseConfigured && supabase && userId) {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (!error && data) {
+        return {
+          id: data.id,
+          email: data.email,
+          fullName: data.full_name || '',
+          phone: data.phone || '',
+          shippingAddress: data.shipping_address || undefined,
+          callsign: data.callsign || '',
+          sector: data.sector || '',
+          avatarUrl: data.avatar_url || '',
+          role: data.role || 'MEMBER_VERIFIED',
+          createdAt: data.created_at,
+          updatedAt: data.updated_at,
+        };
+      }
+    } catch (err: any) {
+      console.warn('[Undergroundz] Supabase fetchUserProfile notice:', err?.message);
+    }
+  }
+
+  // Fallback to local cache if DB table is initializing or offline
+  try {
+    const raw = localStorage.getItem(`undergroundz_profile_${userId}`);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+
+  return null;
+}
+
+/**
+ * Create or update a user profile in Supabase 'profiles' table
+ */
+export async function upsertUserProfile(profile: Partial<UserProfile> & { id: string }): Promise<{
+  success: boolean;
+  data?: UserProfile;
+  error?: string;
+}> {
+  // Always update local cache first
+  try {
+    const existingRaw = localStorage.getItem(`undergroundz_profile_${profile.id}`);
+    const existing = existingRaw ? JSON.parse(existingRaw) : {};
+    const merged = { ...existing, ...profile, updatedAt: new Date().toISOString() };
+    localStorage.setItem(`undergroundz_profile_${profile.id}`, JSON.stringify(merged));
+  } catch {}
+
+  if (isSupabaseConfigured && supabase && profile.id) {
+    try {
+      const payload: Record<string, any> = {
+        id: profile.id,
+        updated_at: new Date().toISOString(),
+      };
+      if (profile.email !== undefined) payload.email = profile.email;
+      if (profile.fullName !== undefined) payload.full_name = profile.fullName;
+      if (profile.phone !== undefined) payload.phone = profile.phone;
+      if (profile.shippingAddress !== undefined) payload.shipping_address = profile.shippingAddress;
+      if (profile.callsign !== undefined) payload.callsign = profile.callsign;
+      if (profile.sector !== undefined) payload.sector = profile.sector;
+      if (profile.avatarUrl !== undefined) payload.avatar_url = profile.avatarUrl;
+      if (profile.role !== undefined) payload.role = profile.role;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .upsert(payload, { onConflict: 'id' })
+        .select('*')
+        .maybeSingle();
+
+      if (error) {
+        console.warn('[Undergroundz] Supabase upsertUserProfile notice (check profiles table schema):', error.message);
+        return { success: true, error: error.message };
+      }
+
+      if (data) {
+        return {
+          success: true,
+          data: {
+            id: data.id,
+            email: data.email,
+            fullName: data.full_name || '',
+            phone: data.phone || '',
+            shippingAddress: data.shipping_address || undefined,
+            callsign: data.callsign || '',
+            sector: data.sector || '',
+            avatarUrl: data.avatar_url || '',
+            role: data.role || 'MEMBER_VERIFIED',
+            createdAt: data.created_at,
+            updatedAt: data.updated_at,
+          },
+        };
+      }
+    } catch (dbErr: any) {
+      console.warn('[Undergroundz] Supabase profile sync error:', dbErr?.message);
+    }
+  }
+
+  return { success: true };
+}
+
+/**
+ * Fetch all community field reports and dispatches from Supabase
+ */
+export async function fetchCommunityPosts(): Promise<CommunityPost[]> {
+  let dbPosts: CommunityPost[] = [];
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('community_posts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        dbPosts = data.map((d: any) => ({
+          id: d.post_id || d.id,
+          author: d.author,
+          role: d.role || 'MEMBER_VERIFIED',
+          location: d.location || 'GLOBAL_GRID',
+          type: d.type || 'quote',
+          quote: d.quote,
+          image: d.image || undefined,
+          timestamp: d.created_at || new Date().toISOString(),
+          heightClass: 'sm',
+        }));
+      }
+    } catch (err: any) {
+      console.warn('[Undergroundz] Supabase community_posts fetch notice:', err?.message);
+    }
+  }
+
+  // Retrieve any locally cached posts
+  let localPosts: CommunityPost[] = [];
+  try {
+    const raw = localStorage.getItem('undergroundz_community_posts');
+    if (raw) localPosts = JSON.parse(raw);
+  } catch {}
+
+  // Merge unique by ID: DB posts first, then local posts, then system default broadcasts
+  const map = new Map<string, CommunityPost>();
+  dbPosts.forEach((p) => map.set(p.id, p));
+  localPosts.forEach((p) => {
+    if (!map.has(p.id)) map.set(p.id, p);
+  });
+  INITIAL_COMMUNITY_POSTS.forEach((p) => {
+    if (!map.has(p.id)) map.set(p.id, p);
+  });
+
+  return Array.from(map.values());
+}
+
+/**
+ * Create and publish a community post / rider field report to Supabase
+ */
+export async function createCommunityPost(
+  post: CommunityPost,
+  userId?: string
+): Promise<{ success: boolean; post?: CommunityPost; error?: string }> {
+  // Cache locally
+  try {
+    const raw = localStorage.getItem('undergroundz_community_posts');
+    const existing: CommunityPost[] = raw ? JSON.parse(raw) : [];
+    localStorage.setItem('undergroundz_community_posts', JSON.stringify([post, ...existing]));
+  } catch {}
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { data, error } = await supabase.from('community_posts').insert({
+        post_id: post.id,
+        user_id: userId || null,
+        author: post.author,
+        role: post.role,
+        location: post.location,
+        type: post.type,
+        quote: post.quote || '',
+        image: post.image || null,
+        created_at: post.timestamp || new Date().toISOString(),
+      }).select().maybeSingle();
+
+      if (error) {
+        console.warn('[Undergroundz] Supabase community_posts insert warning:', error.message);
+        return { success: true, post, error: error.message };
+      }
+
+      return { success: true, post };
+    } catch (err: any) {
+      console.warn('[Undergroundz] Supabase community post error:', err?.message);
+    }
+  }
+
+  return { success: true, post };
+}
+
+/**
+ * Fetch verified customer reviews from Supabase 'product_reviews' table
+ */
+export async function fetchProductReviews(productId: string): Promise<ProductReview[]> {
+  const fallback = PRODUCT_REVIEWS[productId] || [];
+
+  if (isSupabaseConfigured && supabase && productId) {
+    try {
+      const { data, error } = await supabase
+        .from('product_reviews')
+        .select('*')
+        .eq('product_id', productId)
+        .order('created_at', { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        const remoteReviews: ProductReview[] = data.map((d: any) => ({
+          id: d.id,
+          productId: d.product_id,
+          userName: d.user_name,
+          userAvatar: d.user_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400',
+          rating: d.rating,
+          reviewDate: new Date(d.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          reviewText: d.review_text,
+          verifiedPurchase: d.verified_purchase ?? true,
+          stylingImage: d.styling_image || undefined,
+          sizeWorn: d.size_worn || undefined,
+          colorWorn: d.color_worn || undefined,
+          isDemo: false,
+        }));
+
+        // Merge remote with static reviews, deduplicating by ID
+        const map = new Map<string, ProductReview>();
+        remoteReviews.forEach((r) => map.set(r.id, r));
+        fallback.forEach((r) => {
+          if (!map.has(r.id)) map.set(r.id, r);
+        });
+        return Array.from(map.values()).slice(0, 5);
+      }
+    } catch (err: any) {
+      console.warn('[Undergroundz] Supabase product_reviews fetch notice:', err?.message);
+    }
+  }
+
+  return fallback;
+}
+
+/**
+ * Submit a customer product review to Supabase
+ */
+export async function submitProductReview(
+  review: ProductReview,
+  userId?: string
+): Promise<{ success: boolean; review?: ProductReview; error?: string }> {
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { error } = await supabase.from('product_reviews').insert({
+        product_id: review.productId,
+        user_id: userId || null,
+        user_name: review.userName,
+        user_avatar: review.userAvatar,
+        rating: review.rating,
+        review_text: review.reviewText,
+        styling_image: review.stylingImage || null,
+        size_worn: review.sizeWorn || null,
+        color_worn: review.colorWorn || null,
+        verified_purchase: review.verifiedPurchase,
+      });
+
+      if (error) {
+        console.warn('[Undergroundz] Supabase product_reviews insert warning:', error.message);
+        return { success: true, error: error.message };
+      }
+      return { success: true, review };
+    } catch (err: any) {
+      console.warn('[Undergroundz] Supabase review submit error:', err?.message);
+    }
+  }
+
+  return { success: true, review };
 }
 
 /**

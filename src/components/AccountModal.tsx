@@ -19,6 +19,8 @@ import {
   signUpWithEmail,
   signOut,
   getOAuthRedirectInfo,
+  fetchUserProfile,
+  upsertUserProfile,
 } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import { ViewType } from '../types';
@@ -45,6 +47,66 @@ export const AccountModal: React.FC<AccountModalProps> = ({
   const [authError, setAuthError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [popupBlockedUrl, setPopupBlockedUrl] = useState<string | null>(null);
+
+  // Profile data state
+  const [profileName, setProfileName] = useState('');
+  const [profilePhone, setProfilePhone] = useState('');
+  const [profileCallsign, setProfileCallsign] = useState('');
+  const [profileSector, setProfileSector] = useState('');
+  const [profileAddress, setProfileAddress] = useState('');
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileSavedSuccess, setProfileSavedSuccess] = useState(false);
+
+  // Load profile when user logs in or modal opens
+  React.useEffect(() => {
+    if (user?.id && isOpen) {
+      fetchUserProfile(user.id).then((profile) => {
+        if (profile) {
+          setProfileName(profile.fullName || user.user_metadata?.full_name || '');
+          setProfilePhone(profile.phone || '');
+          setProfileCallsign(profile.callsign || '');
+          setProfileSector(profile.sector || '');
+          setProfileAddress(profile.shippingAddress?.address || '');
+        } else {
+          setProfileName(user.user_metadata?.full_name || user.user_metadata?.name || '');
+        }
+      });
+    }
+  }, [user, isOpen]);
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    setProfileSaving(true);
+    try {
+      await upsertUserProfile({
+        id: user.id,
+        email: user.email,
+        fullName: profileName,
+        phone: profilePhone,
+        callsign: profileCallsign,
+        sector: profileSector,
+        shippingAddress: {
+          fullName: profileName,
+          email: user.email || '',
+          phone: profilePhone,
+          address: profileAddress,
+          city: profileSector || 'Berlin',
+          state: '',
+          pincode: '',
+          country: 'India',
+        },
+      });
+      setProfileSavedSuccess(true);
+      setTimeout(() => setProfileSavedSuccess(false), 3000);
+      setIsEditingProfile(false);
+    } catch (err: any) {
+      setAuthError(err?.message || 'Failed to update profile');
+    } finally {
+      setProfileSaving(false);
+    }
+  };
 
   const oauthInfo = getOAuthRedirectInfo();
 
@@ -248,8 +310,132 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                   </div>
                 </div>
 
-                <div className="text-[10px] font-mono text-[#666] bg-[#111114] p-2.5 border border-[#1f1f24] break-all">
-                  USER ID: <span className="text-[#aaa]">{user.id}</span>
+                <div className="text-[10px] font-mono text-[#666] bg-[#111114] p-2.5 border border-[#1f1f24] break-all flex flex-col gap-1">
+                  <div className="flex items-center justify-between">
+                    <span>SUPABASE USER ID:</span>
+                    <span className="text-[#00ff88] text-[9px] flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#00ff88]"></span>
+                      SUPABASE POSTGRES ACTIVE
+                    </span>
+                  </div>
+                  <span className="text-[#aaa]">{user.id}</span>
+                </div>
+
+                {/* Profile Details & Editing */}
+                <div className="border border-[#222] bg-[#111114] p-3.5 flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-mono font-bold uppercase text-white tracking-wider">
+                      RIDER PROFILE & ADDRESS
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingProfile(!isEditingProfile)}
+                      className="text-[10px] font-mono text-[#ff3300] hover:text-white underline cursor-pointer uppercase"
+                    >
+                      {isEditingProfile ? 'CANCEL' : 'EDIT PROFILE'}
+                    </button>
+                  </div>
+
+                  {profileSavedSuccess && (
+                    <div className="p-2 bg-[#0d1e13] border border-[#00ff88]/40 text-[#77ffaa] text-[10px] font-mono flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#00ff88]" />
+                      Profile synchronized to Supabase PostgreSQL.
+                    </div>
+                  )}
+
+                  {isEditingProfile ? (
+                    <form onSubmit={handleSaveProfile} className="flex flex-col gap-2.5">
+                      <div>
+                        <label className="block text-[9px] font-mono uppercase text-[#888] mb-0.5">
+                          Full Name
+                        </label>
+                        <input
+                          type="text"
+                          value={profileName}
+                          onChange={(e) => setProfileName(e.target.value)}
+                          className="w-full h-8 px-2.5 bg-[#09090b] border border-[#333] text-xs text-white focus:outline-none focus:border-[#ff3300]"
+                          placeholder="Your Full Name"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-[9px] font-mono uppercase text-[#888] mb-0.5">
+                            Phone
+                          </label>
+                          <input
+                            type="text"
+                            value={profilePhone}
+                            onChange={(e) => setProfilePhone(e.target.value)}
+                            className="w-full h-8 px-2.5 bg-[#09090b] border border-[#333] text-xs text-white focus:outline-none focus:border-[#ff3300]"
+                            placeholder="+91 / Mobile"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[9px] font-mono uppercase text-[#888] mb-0.5">
+                            Callsign
+                          </label>
+                          <input
+                            type="text"
+                            value={profileCallsign}
+                            onChange={(e) => setProfileCallsign(e.target.value)}
+                            className="w-full h-8 px-2.5 bg-[#09090b] border border-[#333] text-xs text-white focus:outline-none focus:border-[#ff3300]"
+                            placeholder="e.g. PHANTOM_9"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-mono uppercase text-[#888] mb-0.5">
+                          Delivery Sector / City
+                        </label>
+                        <input
+                          type="text"
+                          value={profileSector}
+                          onChange={(e) => setProfileSector(e.target.value)}
+                          className="w-full h-8 px-2.5 bg-[#09090b] border border-[#333] text-xs text-white focus:outline-none focus:border-[#ff3300]"
+                          placeholder="City / District"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-mono uppercase text-[#888] mb-0.5">
+                          Shipping Address
+                        </label>
+                        <input
+                          type="text"
+                          value={profileAddress}
+                          onChange={(e) => setProfileAddress(e.target.value)}
+                          className="w-full h-8 px-2.5 bg-[#09090b] border border-[#333] text-xs text-white focus:outline-none focus:border-[#ff3300]"
+                          placeholder="Street Address, Apt / Suite"
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={profileSaving}
+                        className="mt-1 w-full h-8 bg-[#ff3300] hover:bg-[#cc2900] text-white font-mono text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+                      >
+                        {profileSaving ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : null}
+                        SAVE PROFILE TO SUPABASE
+                      </button>
+                    </form>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2 text-[11px] font-mono">
+                      <div>
+                        <span className="text-[9px] text-[#666] block">CALLSIGN:</span>
+                        <span className="text-[#ccc]">{profileCallsign || 'RIDER_DEFAULT'}</span>
+                      </div>
+                      <div>
+                        <span className="text-[9px] text-[#666] block">PHONE:</span>
+                        <span className="text-[#ccc]">{profilePhone || 'Not set'}</span>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-[9px] text-[#666] block">SAVED ADDRESS:</span>
+                        <span className="text-[#ccc] truncate block">
+                          {profileAddress ? `${profileAddress}${profileSector ? `, ${profileSector}` : ''}` : 'No shipping address recorded yet'}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex flex-col gap-2">

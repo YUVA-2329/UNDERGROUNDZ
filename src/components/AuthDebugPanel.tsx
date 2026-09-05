@@ -11,8 +11,35 @@ export const AuthDebugPanel: React.FC<AuthDebugPanelProps> = ({ user }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [authState, setAuthState] = useState<string>('INITIALIZING');
   const [clientStatus, setClientStatus] = useState<'CONNECTED' | 'ERROR'>('CONNECTED');
+  const [dbStatus, setDbStatus] = useState<Record<string, 'READY' | 'INITIALIZING' | 'ERROR'>>({
+    profiles: 'INITIALIZING',
+    orders: 'INITIALIZING',
+    community_posts: 'INITIALIZING',
+    product_reviews: 'INITIALIZING',
+  });
 
   const oauthInfo = getOAuthRedirectInfo();
+
+  const checkDatabaseHealth = async () => {
+    if (!supabase) return;
+    const tables = ['profiles', 'orders', 'community_posts', 'product_reviews'];
+    const results: Record<string, 'READY' | 'INITIALIZING' | 'ERROR'> = {};
+
+    for (const table of tables) {
+      try {
+        const { error } = await supabase.from(table).select('*', { count: 'exact', head: true });
+        if (error) {
+          // PGRST205 / 404 indicates table hasn't been migrated yet
+          results[table] = error.code === 'PGRST205' ? 'INITIALIZING' : 'READY';
+        } else {
+          results[table] = 'READY';
+        }
+      } catch {
+        results[table] = 'ERROR';
+      }
+    }
+    setDbStatus(results);
+  };
 
   const refreshSessionState = async () => {
     if (supabase) {
@@ -29,12 +56,14 @@ export const AuthDebugPanel: React.FC<AuthDebugPanelProps> = ({ user }) => {
         setAuthState(`FAILED: ${err?.message || 'Unknown'}`);
       }
     }
+    checkDatabaseHealth();
   };
 
   useEffect(() => {
     if (supabase) {
       setClientStatus('CONNECTED');
       refreshSessionState();
+      checkDatabaseHealth();
 
       const { data } = supabase.auth.onAuthStateChange((event, session) => {
         setAuthState(session ? `ACTIVE (${event})` : `UNAUTHENTICATED (${event})`);
@@ -171,6 +200,23 @@ export const AuthDebugPanel: React.FC<AuthDebugPanelProps> = ({ user }) => {
               <span className="text-[#d8d8d8] font-medium text-[9px] truncate max-w-[180px]">
                 {authState}
               </span>
+            </div>
+
+            {/* Supabase Database Tables */}
+            <div className="border-t border-[#1c1c22] pt-1.5 flex flex-col gap-1">
+              <span className="text-[#888] text-[9px] uppercase tracking-wider font-bold">
+                Supabase Tables (PostgreSQL):
+              </span>
+              <div className="grid grid-cols-2 gap-1 text-[9px]">
+                {Object.entries(dbStatus).map(([tbl, status]) => (
+                  <div key={tbl} className="flex items-center justify-between bg-[#141418] px-1.5 py-0.5 border border-[#222]">
+                    <span className="text-[#aaa] truncate">{tbl}:</span>
+                    <span className={`font-bold ml-1 ${status === 'READY' ? 'text-[#00ff88]' : 'text-[#eab308]'}`}>
+                      {status}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 

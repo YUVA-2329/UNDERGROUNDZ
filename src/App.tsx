@@ -22,7 +22,14 @@ import { CheckoutPage } from './views/CheckoutPage';
 import { OrderConfirmationPage } from './views/OrderConfirmationPage';
 import { MyOrdersPage } from './views/MyOrdersPage';
 import { BrandIntroCinematic } from './components/BrandIntroCinematic';
-import { getCurrentUser, supabase } from './lib/supabase';
+import {
+  getCurrentUser,
+  supabase,
+  fetchCommunityPosts,
+  createCommunityPost,
+  fetchUserProfile,
+  upsertUserProfile,
+} from './lib/supabase';
 import type { User } from '@supabase/supabase-js';
 
 export default function App() {
@@ -69,6 +76,32 @@ export default function App() {
       console.error('Failed to persist cart:', e);
     }
   }, [cart]);
+
+  // Load community posts from Supabase
+  useEffect(() => {
+    fetchCommunityPosts().then((posts) => {
+      if (posts && posts.length > 0) {
+        setCommunityPosts(posts);
+      }
+    });
+  }, []);
+
+  // Sync user profile to Supabase on authentication
+  useEffect(() => {
+    if (user?.id) {
+      fetchUserProfile(user.id).then((profile) => {
+        if (!profile) {
+          upsertUserProfile({
+            id: user.id,
+            email: user.email || '',
+            fullName: user.user_metadata?.full_name || user.user_metadata?.name || '',
+            avatarUrl: user.user_metadata?.avatar_url || user.user_metadata?.picture || '',
+            role: 'MEMBER_VERIFIED',
+          });
+        }
+      });
+    }
+  }, [user]);
 
   // Auth synchronization & Session Lifecycle Handler
   useEffect(() => {
@@ -283,8 +316,9 @@ export default function App() {
     } catch {}
   };
 
-  const handleAddCommunityPost = (post: CommunityPost) => {
+  const handleAddCommunityPost = async (post: CommunityPost) => {
     setCommunityPosts((prev) => [post, ...prev]);
+    await createCommunityPost(post, user?.id);
   };
 
   const handleOrderSuccess = (order: Order) => {

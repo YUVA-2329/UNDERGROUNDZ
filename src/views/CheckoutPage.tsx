@@ -4,6 +4,8 @@ import {
   getCurrentUser,
   signInWithGoogle,
   isSupabaseConfigured,
+  fetchUserProfile,
+  upsertUserProfile,
 } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import { DemoPaymentScreen } from '../components/DemoPaymentScreen';
@@ -60,6 +62,16 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
       const user = await getCurrentUser();
       setCurrentUser(user);
 
+      // Check remote Supabase profile first
+      let remoteProfile: any = null;
+      if (user?.id) {
+        try {
+          remoteProfile = await fetchUserProfile(user.id);
+        } catch (e) {
+          console.warn('Failed to load user profile from Supabase', e);
+        }
+      }
+
       // Check saved customer details in local cache
       let savedLocal: Partial<CustomerDetails> = {};
       try {
@@ -72,22 +84,25 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
       }
 
       const inferredName =
+        remoteProfile?.fullName ||
         user?.user_metadata?.full_name ||
         user?.user_metadata?.name ||
         user?.user_metadata?.user_name ||
         (user?.email ? user.email.split('@')[0].replace(/[._-]/g, ' ') : '');
 
+      const remoteAddress = remoteProfile?.shippingAddress || {};
+
       setCustomer((prev) => {
         const updated = {
           ...prev,
           fullName: prev.fullName || inferredName || savedLocal.fullName || '',
-          email: prev.email || user?.email || savedLocal.email || '',
-          phone: prev.phone || user?.user_metadata?.phone || (user as any)?.phone || savedLocal.phone || '',
-          address: prev.address || savedLocal.address || '',
-          city: prev.city || savedLocal.city || '',
-          state: prev.state || savedLocal.state || '',
-          pincode: prev.pincode || savedLocal.pincode || '',
-          country: prev.country || savedLocal.country || 'India',
+          email: prev.email || user?.email || remoteProfile?.email || savedLocal.email || '',
+          phone: prev.phone || remoteProfile?.phone || remoteAddress.phone || user?.user_metadata?.phone || (user as any)?.phone || savedLocal.phone || '',
+          address: prev.address || remoteAddress.address || savedLocal.address || '',
+          city: prev.city || remoteAddress.city || savedLocal.city || '',
+          state: prev.state || remoteAddress.state || savedLocal.state || '',
+          pincode: prev.pincode || remoteAddress.pincode || savedLocal.pincode || '',
+          country: prev.country || remoteAddress.country || savedLocal.country || 'India',
         };
         try {
           localStorage.setItem('undergroundz_customer_details', JSON.stringify(updated));
@@ -191,6 +206,19 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
     if (cart.length === 0) {
       setPaymentError('Your cart is empty. Add products before proceeding.');
       return;
+    }
+
+    // Sync profile to Supabase if authenticated
+    if (currentUser?.id) {
+      upsertUserProfile({
+        id: currentUser.id,
+        email: customer.email,
+        fullName: customer.fullName,
+        phone: customer.phone,
+        shippingAddress: customer,
+      }).catch((err) => {
+        console.warn('Supabase profile sync background notice:', err);
+      });
     }
 
     // Advance directly to the dedicated Undergroundz Demo Payment Screen

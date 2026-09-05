@@ -147,3 +147,17 @@ export interface FieldReport {
   status: 'VERIFIED' | 'PENDING';
 }
 
+export interface UserProfile {
+  id: string;
+  email: string;
+  fullName: string;
+  phone?: string;
+  shippingAddress?: CustomerDetails;
+  callsign?: string;
+  sector?: string;
+  avatarUrl?: string;
+  role?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
