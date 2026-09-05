@@ -39,13 +39,43 @@ import {
 import type { User } from '@supabase/supabase-js';
 
 export default function App() {
-  // Restore view if returning from OAuth redirect / authentication
+  // Determine initial view:
+  // 1. Auth return callback takes priority (no intro during auth redirects)
+  // 2. Play intro ONLY ONCE per tab on first visit; after n refreshes it will NOT play a second time
   const [currentView, setCurrentView] = useState<ViewType>(() => {
     if (typeof window !== 'undefined') {
-      const savedView = sessionStorage.getItem('undergroundz_auth_return_view');
-      if (savedView) {
-        sessionStorage.removeItem('undergroundz_auth_return_view');
-        return savedView as ViewType;
+      try {
+        // Check if returning from OAuth redirect / authentication
+        const savedView = sessionStorage.getItem('undergroundz_auth_return_view');
+        if (savedView) {
+          sessionStorage.removeItem('undergroundz_auth_return_view');
+          sessionStorage.setItem('undergroundz_intro_played', 'true');
+          return savedView as ViewType;
+        }
+
+        // Avoid playing intro if this is an auth callback in URL
+        const search = window.location.search || '';
+        const hash = window.location.hash || '';
+        const isAuthCallback =
+          search.includes('code=') ||
+          hash.includes('access_token=') ||
+          hash.includes('refresh_token=') ||
+          (window.opener && window.opener !== window);
+
+        if (isAuthCallback) {
+          sessionStorage.setItem('undergroundz_intro_played', 'true');
+          return 'home';
+        }
+
+        // Check if the intro has already played in this tab/session
+        const introPlayedInTab = sessionStorage.getItem('undergroundz_intro_played');
+        if (!introPlayedInTab) {
+          // Mark immediately so even if refreshed while playing or after n refreshes, it never plays a second time
+          sessionStorage.setItem('undergroundz_intro_played', 'true');
+          return 'intro';
+        }
+      } catch {
+        return 'home';
       }
     }
     return 'home';
