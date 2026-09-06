@@ -477,3 +477,38 @@ export async function sendTelegramTestPing(): Promise<{
     { bypassDeduplication: true }
   );
 }
+
+// =========================================================================
+// Generic User Action
+// =========================================================================
+export async function notifyUserAction(
+  action: string,
+  details?: Record<string, unknown>
+): Promise<void> {
+  await dispatchTelegramNotification({
+    event: 'USER_ACTION',
+    title: `User Action: ${action}`,
+    customFields: details,
+  }, { bypassDeduplication: true });
+}
+
+// =========================================================================
+// 9. Community Post / Field Dispatch
+// =========================================================================
+export async function notifyCommunityPost(post: {
+  author: string;
+  location: string;
+  quote: string;
+  mobileNumber?: string;
+}): Promise<void> {
+  await dispatchTelegramNotification({
+    event: 'NEW_COMMUNITY_POST',
+    title: `New Community Dispatch: ${post.author}`,
+    customFields: {
+      author: post.author,
+      bike_or_location: post.location,
+      mobile: post.mobileNumber || 'Not provided',
+      message: post.quote,
+    },
+  });
+}

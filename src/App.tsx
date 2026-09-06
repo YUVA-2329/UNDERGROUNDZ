@@ -1,3 +1,4 @@
+import { notifyUserAction } from './services/telegramNotifications';
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -5,7 +6,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { ViewType, ProductItem, CartItem, CommunityPost, Order } from './types';
-import { PRODUCTS, INITIAL_COMMUNITY_POSTS } from './data';
+import { PRODUCTS } from './data';
 import { NavigationHeader } from './components/NavigationHeader';
 import { BottomNavBar } from './components/BottomNavBar';
 import { NavigationDrawer } from './components/NavigationDrawer';
@@ -41,6 +42,8 @@ import {
 import type { User } from '@supabase/supabase-js';
 
 export default function App() {
+
+
   // Determine initial view:
   // 1. Auth return callback takes priority (no intro during auth redirects)
   // 2. Play intro ONLY ONCE per tab on first visit; after n refreshes it will NOT play a second time
@@ -49,6 +52,8 @@ export default function App() {
       try {
         // Check if returning from OAuth redirect / authentication
         const savedView = sessionStorage.getItem('undergroundz_auth_return_view');
+
+
         if (savedView) {
           sessionStorage.removeItem('undergroundz_auth_return_view');
           return savedView as ViewType;
@@ -78,6 +83,36 @@ export default function App() {
         }
         return 'home';
   });
+    // Global Event Tracking for Telegram
+  useEffect(() => {
+    if (currentView !== 'intro') {
+      notifyUserAction('Page View', { view: currentView });
+    }
+  }, [currentView]);
+
+  useEffect(() => {
+    const handleGlobalClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const buttonOrLink = target.closest('button, a') as HTMLElement;
+      if (buttonOrLink) {
+        const actionName = buttonOrLink.innerText?.trim().slice(0, 50) || buttonOrLink.getAttribute('aria-label') || buttonOrLink.title || 'Unknown Interaction';
+        const elementType = buttonOrLink.tagName.toLowerCase();
+        
+        // Don't spam empty clicks
+        if (actionName) {
+          notifyUserAction('Interaction', { 
+            element: elementType, 
+            label: actionName,
+            className: buttonOrLink.className.substring(0, 50)
+          }).catch(() => {});
+        }
+      }
+    };
+    
+    document.addEventListener('click', handleGlobalClick, { capture: true });
+    return () => document.removeEventListener('click', handleGlobalClick, { capture: true });
+  }, []);
+
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [selectedProduct, setSelectedProduct] = useState<ProductItem>(PRODUCTS[0]);
   
@@ -91,7 +126,7 @@ export default function App() {
     }
   });
 
-  const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>(INITIAL_COMMUNITY_POSTS);
+  const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
 
@@ -112,13 +147,31 @@ export default function App() {
     }
   }, [cart]);
 
-  // Load community posts from Supabase
+  // Load community posts from Supabase and subscribe to real-time changes
   useEffect(() => {
     fetchCommunityPosts().then((posts) => {
-      if (posts && posts.length > 0) {
-        setCommunityPosts(posts);
-      }
+      setCommunityPosts(posts || []);
     });
+    
+    let subscription = null;
+    if (supabase) {
+      subscription = supabase
+        .channel('community_posts_channel')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'community_posts' },
+          (payload) => {
+            fetchCommunityPosts().then((posts) => setCommunityPosts(posts || []));
+          }
+        )
+        .subscribe();
+    }
+    
+    return () => {
+      if (subscription) {
+        supabase.removeChannel(subscription);
+      }
+    };
   }, []);
 
   // Sync user profile to Supabase on authentication

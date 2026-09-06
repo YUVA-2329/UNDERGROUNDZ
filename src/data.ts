@@ -390,71 +390,7 @@ export const PRODUCT_REVIEWS: Record<string, ProductReview[]> = {
 };
 
 
-export const INITIAL_COMMUNITY_POSTS: CommunityPost[] = [
-  {
-    id: 'post-1',
-    author: 'KYLE_082 / FOUNDATION',
-    role: 'MEMBER_VERIFIED',
-    location: 'LOCATION: BERLIN_SECTOR_04',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBiwcxyRV5BTbw3RlmYtqUcXAiD0jTPRyGQg2L-9hm7aTGLxC6ELLQuigEg7KPXVGzqlSPchcnoqyXcgNIj3J3owT_vJSXqyhdjvYdKSXO7Yj3L5OLKcFpj32L5vnb4q9aFtI5x-FfSjPqymZJAYR54-3dHWAaqLMrvgBNUYwN5vsAcFJg22Sd1JZnx4IdkCjvLlBJzVU-HHURrWSftGtpMNkoFanBAVKNpsEv61vT4Wul4W0J7WB9QMw',
-    type: 'verified_member',
-    heightClass: 'lg',
-    timestamp: '2026-07-29T14:22:00Z'
-  },
-  {
-    id: 'post-2',
-    author: 'ARCHIVE_01',
-    role: 'VERIFIED RIDER',
-    location: 'TOKYO_SHIBUYA',
-    type: 'quote',
-    quote: '"A level of craftsmanship that\'s immediately noticeable. The UNDERGROUNDZ chest branding stands out in dark alleyways."',
-    heightClass: 'sm',
-    timestamp: '2026-07-28T09:15:00Z'
-  },
-  {
-    id: 'post-3',
-    author: 'RIDER_88',
-    role: 'MECHANICAL FEED',
-    location: 'HAMBURG_DOCKS',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDNW-H2qu9ui4sLN7GrpjTr-GZ3dgudySwDmCSfCX6z5P4fBE8Lr4V7wiQyssTmKsoZtTeBvVi_YpmXnFhUCbsPI_CS5-dBzVD5brISPy1jwWDE5OwS4ZYlLb00vWCGJiyMdEXPqIU2l33UJMPW6ha_GsklG3cBbnfaBK5Nw7hO8A5JTaJxtM7YK3_oAXs1dgvj8-34md9IRW0U--WxO56yawb9G9Xg1r-Akh1_h0H8nz0O6tOJh5UCWA',
-    type: 'photo',
-    title: 'ENGINE_MECHANICS_V2',
-    heightClass: 'md',
-    timestamp: '2026-07-27T18:40:00Z'
-  },
-  {
-    id: 'post-4',
-    author: 'VELOCITY_STUDY_09',
-    role: 'FIELD RIDER',
-    location: 'PARIS_TUNNELS',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDDNAws_4DeeAMwziU4qvarsDMHRFFRsal5bX7ImL-LF2ARqnnGdTHDvwRcFXF3sVuU9_BFIj_aeaYPsNyir_AK1DBMZFALuxNVp2vJSXzjLFL0PSkX39Tooo7wPt4EI-s5ue-lqs4-LXRNSmDNCvWIFjkT9dPaG_0wk7YmlGxw_JA2EIyRJZUB6gx_T9Yp-CIXhTfDzkpGHhix5GpQ_2ByIG3Kia5zz4lAI_lfE5tITbL6pNYlWFOQZ_w',
-    type: 'velocity',
-    title: 'HIGH SPEED TRANSIT',
-    heightClass: 'lg',
-    timestamp: '2026-07-26T22:05:00Z'
-  },
-  {
-    id: 'post-5',
-    author: 'SECTOR_CHIEF',
-    role: 'ELITE EVALUATOR',
-    location: 'LONDON_SUBWAY',
-    type: 'review',
-    quote: 'BEYOND THE FABRIC. IT\'S A TECHNICAL SHIELD FOR THE URBAN FRONTIER. THE SILHOUETTE IS AGGRESSIVE, UNAPOLOGETIC, AND PROUDLY EMBOSSED WITH UNDERGROUNDZ.',
-    rating: 5.0,
-    heightClass: 'md',
-    timestamp: '2026-07-25T11:30:00Z'
-  },
-  {
-    id: 'post-6',
-    author: 'NEO_CONCRETE',
-    role: 'ARCHITECTURAL OBSERVER',
-    location: 'SPOKANE_DAM',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA49SpwzYTy0cEhT3jHVVSD-O8-3XEIQR532VB7EX3WI0TQGA0QGNzFHYnwicvyBiQQdQTDhW8jdon_UmhsTMyIWbMyGM8cf5arOKqqEXBWPaiz9NCA_itfhdrWklf8pYPCEftmGGxfYXvyfoa7Pxdioww28Z_Ln2AKZgQObxgRnGerZlhTEmz9LZoWFCqkncuBjxbq4nXeqCm03ywU9_HAzkHUa_DLTdYIBfKvZoPTcaooi73ruTNdlw',
-    type: 'photo',
-    heightClass: 'md',
-    timestamp: '2026-07-24T16:00:00Z'
-  }
-];
+export const INITIAL_COMMUNITY_POSTS: CommunityPost[] = [];
 
 export const SYSTEM_LOGS_MOCK = [
   '[INFO] BOOTING SYSTEM_CORE_V4.2.0...',

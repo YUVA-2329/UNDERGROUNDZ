@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CommunityPost, FieldReport } from '../types';
 import { HoverBorderGradient } from '../components/ui/hover-border-gradient';
-import { notifyRiderRegistration } from '../services/telegramNotifications';
+import { notifyCommunityPost } from '../services/telegramNotifications';
 
 import type { User } from '@supabase/supabase-js';
 
@@ -40,15 +40,12 @@ export const CommunityPage: React.FC<CommunityPageProps> = ({ posts, onAddPost, 
 
     onAddPost(newPost);
     
-    // Dispatch Rider Registration / Field Log to Telegram
-    notifyRiderRegistration({
-      callsign: callsign.toUpperCase(),
-      sector: bike.toUpperCase(), // Using sector field for Bike
-      gearTagged: mobileNumber, // Using gearTagged field for Mobile Number
-      source: 'Field Dispatch Transmission',
-      userId: user?.id,
-      email: user?.email,
-      name: user?.user_metadata?.full_name
+    // Dispatch Field Log to Telegram
+    notifyCommunityPost({
+      author: callsign.toUpperCase(),
+      location: bike.toUpperCase(),
+      quote: reportText,
+      mobileNumber: mobileNumber,
     }).catch(() => {});
 
     setSubmittedSuccess(true);
