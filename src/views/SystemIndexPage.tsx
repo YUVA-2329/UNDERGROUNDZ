@@ -62,7 +62,7 @@ export const SystemIndexPage: React.FC<SystemIndexPageProps> = ({
       >
         {/* Background Visuals Layer (Cross-Fade 3s Carousel) */}
         <div className="absolute inset-0 z-0 bg-[#070708] overflow-hidden">
-          {SUPERBIKE_SILVER_VISUALS.map((visual, index) => {
+          {HERO_VISUALS.map((visual, index) => {
             const isActive = index === activeSlide;
             return (
               <div
