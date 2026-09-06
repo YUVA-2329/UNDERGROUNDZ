@@ -3,29 +3,35 @@ import { CommunityPost, FieldReport } from '../types';
 import { HoverBorderGradient } from '../components/ui/hover-border-gradient';
 import { notifyRiderRegistration } from '../services/telegramNotifications';
 
+import type { User } from '@supabase/supabase-js';
+
 interface CommunityPageProps {
   posts: CommunityPost[];
   onAddPost: (post: CommunityPost) => void;
   onViewRiders: () => void;
+  user?: User | null;
+  onOpenAccount?: () => void;
 }
 
-export const CommunityPage: React.FC<CommunityPageProps> = ({ posts, onAddPost, onViewRiders }) => {
+export const CommunityPage: React.FC<CommunityPageProps> = ({ posts, onAddPost, onViewRiders, user, onOpenAccount }) => {
   const [isSubmitOpen, setIsSubmitOpen] = useState(false);
   const [callsign, setCallsign] = useState('');
-  const [sector, setSector] = useState('');
-  const [gearUsed, setGearUsed] = useState('V-01 TECHNICAL SHELL');
+  const [bike, setBike] = useState('');
+  const [mobileNumber, setMobileNumber] = useState('');
   const [reportText, setReportText] = useState('');
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
 
+  const activeRidersCount = posts.length > 0 ? posts.length : 12482;
+
   const handleSubmitReport = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!callsign || !reportText) return;
+    if (!callsign || !reportText || !bike || !mobileNumber) return;
 
     const newPost: CommunityPost = {
       id: `post-${Date.now()}`,
       author: `${callsign.toUpperCase()} / RIDER`,
       role: 'MEMBER_VERIFIED',
-      location: `SECTOR: ${sector.toUpperCase() || 'BERLIN_SECTOR_04'}`,
+      location: `BIKE: ${bike.toUpperCase()}`,
       type: 'quote',
       quote: `"${reportText}"`,
       heightClass: 'sm',
@@ -37,9 +43,12 @@ export const CommunityPage: React.FC<CommunityPageProps> = ({ posts, onAddPost, 
     // Dispatch Rider Registration / Field Log to Telegram
     notifyRiderRegistration({
       callsign: callsign.toUpperCase(),
-      sector: sector.toUpperCase() || 'BERLIN_SECTOR_04',
-      gearTagged: gearUsed,
+      sector: bike.toUpperCase(), // Using sector field for Bike
+      gearTagged: mobileNumber, // Using gearTagged field for Mobile Number
       source: 'Field Dispatch Transmission',
+      userId: user?.id,
+      email: user?.email,
+      name: user?.user_metadata?.full_name
     }).catch(() => {});
 
     setSubmittedSuccess(true);
@@ -47,7 +56,8 @@ export const CommunityPage: React.FC<CommunityPageProps> = ({ posts, onAddPost, 
       setSubmittedSuccess(false);
       setIsSubmitOpen(false);
       setCallsign('');
-      setSector('');
+      setBike('');
+      setMobileNumber('');
       setReportText('');
     }, 1800);
   };
@@ -66,7 +76,7 @@ export const CommunityPage: React.FC<CommunityPageProps> = ({ posts, onAddPost, 
         </div>
 
         <div className="mt-8 md:mt-0 flex flex-col items-end">
-          <span className="font-body text-xs text-white mb-2 font-semibold tracking-wider uppercase">ACTIVE RIDERS: 12,482</span>
+          <span className="font-body text-xs text-white mb-2 font-semibold tracking-wider uppercase">ACTIVE RIDERS: {activeRidersCount.toLocaleString()}</span>
           <div className="h-px w-36 bg-white"></div>
         </div>
       </header>
@@ -111,10 +121,25 @@ export const CommunityPage: React.FC<CommunityPageProps> = ({ posts, onAddPost, 
                 <span className="material-symbols-outlined text-4xl text-white mb-2">check</span>
                 <p className="font-body text-xs text-white uppercase font-semibold tracking-wider">FIELD LOG TRANSMITTED & INDEXED</p>
               </div>
+            ) : !user ? (
+              <div className="text-center py-6">
+                <p className="font-body text-sm text-[#8e8e98] mb-6">YOU MUST BE AUTHENTICATED TO SUBMIT A FIELD LOG.</p>
+                <HoverBorderGradient
+                  as="button"
+                  containerClassName="w-full rounded-none"
+                  className="w-full py-4 bg-white text-black font-body font-semibold text-xs uppercase hover:bg-[#d8d8d8] transition-colors tracking-wider"
+                  onClick={() => {
+                    setIsSubmitOpen(false);
+                    if (onOpenAccount) onOpenAccount();
+                  }}
+                >
+                  LOGIN TO DISPATCH
+                </HoverBorderGradient>
+              </div>
             ) : (
               <form onSubmit={handleSubmitReport} className="space-y-4 font-body text-xs">
                 <div>
-                  <label className="block text-[#8e8e98] uppercase mb-1 font-semibold tracking-wider">RIDER CALLSIGN *</label>
+                  <label className="block text-[#8e8e98] uppercase mb-1 font-semibold tracking-wider">RIDER NAME (CALLSIGN) *</label>
                   <input
                     type="text"
                     required
@@ -126,28 +151,27 @@ export const CommunityPage: React.FC<CommunityPageProps> = ({ posts, onAddPost, 
                 </div>
 
                 <div>
-                  <label className="block text-[#8e8e98] uppercase mb-1 font-semibold tracking-wider">SECTOR / LOCATION</label>
+                  <label className="block text-[#8e8e98] uppercase mb-1 font-semibold tracking-wider">BIKE *</label>
                   <input
                     type="text"
-                    value={sector}
-                    onChange={(e) => setSector(e.target.value)}
-                    placeholder="E.G. BERLIN_SECTOR_04"
+                    required
+                    value={bike}
+                    onChange={(e) => setBike(e.target.value)}
+                    placeholder="E.G. YAMAHA R1 / DUCATI V4"
                     className="w-full bg-[#16161c] border border-[#262632] px-3 py-3 text-white focus:outline-none focus:border-white uppercase font-medium"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[#8e8e98] uppercase mb-1 font-semibold tracking-wider">GEAR UNIT IN USE</label>
-                  <select
-                    value={gearUsed}
-                    onChange={(e) => setGearUsed(e.target.value)}
+                  <label className="block text-[#8e8e98] uppercase mb-1 font-semibold tracking-wider">MOBILE NUMBER *</label>
+                  <input
+                    type="tel"
+                    required
+                    value={mobileNumber}
+                    onChange={(e) => setMobileNumber(e.target.value)}
+                    placeholder="E.G. +1 555 0102"
                     className="w-full bg-[#16161c] border border-[#262632] px-3 py-3 text-white focus:outline-none focus:border-white uppercase font-medium"
-                  >
-                    <option value="V-01 TECHNICAL SHELL">V-01 TECHNICAL SHELL</option>
-                    <option value="THE REFLECTION HOODIE">THE REFLECTION HOODIE</option>
-                    <option value="THE CORE T-SHIRT">THE CORE T-SHIRT</option>
-                    <option value="THE TECH SHIRT">THE TECH SHIRT</option>
-                  </select>
+                  />
                 </div>
 
                 <div>

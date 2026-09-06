@@ -460,6 +460,8 @@ export default function App() {
           posts={communityPosts}
           onAddPost={handleAddCommunityPost}
           onViewRiders={() => setCurrentView('riders')}
+          user={user}
+          onOpenAccount={() => setIsAccountOpen(true)}
         />
       )}
 
