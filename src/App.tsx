@@ -14,7 +14,7 @@ import { SearchModal } from './components/SearchModal';
 import { SizeGuideModal } from './components/SizeGuideModal';
 import { AccountModal } from './components/AccountModal';
 import { AuthPromptToast } from './components/AuthPromptToast';
-import { AuthDebugPanel } from './components/AuthDebugPanel';
+
 import { SystemIndexPage } from './views/SystemIndexPage';
 import { CollectionVoidPage } from './views/CollectionVoidPage';
 import { ProductDetailPage } from './views/ProductDetailPage';
@@ -53,12 +53,30 @@ export default function App() {
           sessionStorage.removeItem('undergroundz_auth_return_view');
           return savedView as ViewType;
         }
+        // Check if the intro has already played in this tab/session
+        const introPlayedInTab = sessionStorage.getItem('undergroundz_intro_played');
+        if (!introPlayedInTab) {
+          sessionStorage.setItem('undergroundz_intro_played', 'true');
+          return 'intro';
+        }
         return 'home';
       } catch {
+        // Check if the intro has already played in this tab/session
+        const introPlayedInTab = sessionStorage.getItem('undergroundz_intro_played');
+        if (!introPlayedInTab) {
+          sessionStorage.setItem('undergroundz_intro_played', 'true');
+          return 'intro';
+        }
         return 'home';
       }
     }
-    return 'home';
+        // Check if the intro has already played in this tab/session
+        const introPlayedInTab = sessionStorage.getItem('undergroundz_intro_played');
+        if (!introPlayedInTab) {
+          sessionStorage.setItem('undergroundz_intro_played', 'true');
+          return 'intro';
+        }
+        return 'home';
   });
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [selectedProduct, setSelectedProduct] = useState<ProductItem>(PRODUCTS[0]);
@@ -380,7 +398,13 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#070708] text-[#e2e2e2] font-body relative selection:bg-[#ff3300] selection:text-white">
-      {/* Cinematic Brand Intro removed per instructions */}
+      {/* 4K Cinematic Brand Intro */}
+      {currentView === 'intro' && (
+        <BrandIntroCinematic
+          onComplete={() => setCurrentView('home')}
+          autoPlay={true}
+        />
+      )}
 
       {/* Top Header */}
       {currentView !== 'intro' && (
@@ -539,7 +563,7 @@ export default function App() {
       />
 
       {/* Development Auth Diagnostic Panel */}
-      {currentView !== 'intro' && <AuthDebugPanel user={user} />}
+      
     </div>
   );
 }

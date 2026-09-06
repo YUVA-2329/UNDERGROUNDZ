@@ -399,7 +399,7 @@ export const BrandIntroCinematic: React.FC<BrandIntroCinematicProps> = ({
           {/* Logo Container with Left-to-Right Reveal Mask */}
           <div
             ref={logoWrapperRef}
-            className="relative w-full flex items-center justify-center"
+            className="relative w-full flex flex-col items-center justify-center"
             style={{
               clipPath: 'inset(0 100% 0 0)',
               willChange: 'clip-path',
@@ -414,6 +414,9 @@ export const BrandIntroCinematic: React.FC<BrandIntroCinematicProps> = ({
                 willChange: 'transform',
               }}
             />
+            <div className="mt-4 font-body text-[#8e8e98] text-xs sm:text-sm md:text-base tracking-[0.3em] sm:tracking-[0.5em] font-bold uppercase text-center">
+              WHEN ENGINE SPEAKS
+            </div>
           </div>
 
           {/* Slicing Vertical White Light Beam at the Reveal Leading Edge */}
