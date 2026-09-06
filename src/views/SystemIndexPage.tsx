@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ViewType, ProductItem } from '../types';
 import { HoverBorderGradient } from '../components/ui/hover-border-gradient';
-import { RiderManifestoBanner } from '../components/RiderManifestoBanner';
 
 interface SystemIndexPageProps {
   setCurrentView: (view: ViewType) => void;
@@ -10,33 +9,26 @@ interface SystemIndexPageProps {
   products: ProductItem[];
 }
 
-const SUPERBIKE_SILVER_VISUALS = [
+const HERO_VISUALS = [
   {
     id: '01',
-    src: '/superbike_silver_1.jpg',
-    model: 'APEX STEALTH // 1000RR',
-    spec: '998CC • 218 HP • 14,500 RPM',
-    telemetry: 'GEAR: 6 // SPEED: 298 KM/H',
-    coordinates: 'LAT: 45.6200° N / LNG: 9.2811° E',
-    alt: 'Matte black and dark silver aerodynamic superbike with aggressive dual headlights on dark asphalt',
+    src: '/IMG_3541.JPEG',
+    alt: 'Undergroundz Rider 1',
   },
   {
     id: '02',
-    src: '/superbike_silver_2.jpg',
-    model: 'CHRONO TARMAC // INTERCEPTOR',
-    spec: 'TITANIUM MONOCOQUE • OHLINS TTX',
-    telemetry: 'LEAN: 54° // TRACTION: LVL 1',
-    coordinates: 'LAT: 36.5785° N / LNG: 121.9018° W',
-    alt: 'High-speed superbike carving alpine curves on open tarmac highway with dark silver finish',
+    src: '/IMG-20260904-WA0100.jpg',
+    alt: 'Undergroundz Rider 2',
   },
   {
     id: '03',
-    src: '/superbike_silver_3.jpg',
-    model: 'VELOCITY MONOCHROME // APEX',
-    spec: 'BREMBO MONOBLOC • CARBON COMPOSITE',
-    telemetry: 'THROTTLE: 100% // QUICKSHIFTER ACTIVE',
-    coordinates: 'LAT: 44.3411° N / LNG: 11.7139° E',
-    alt: 'Rider carving corner on high performance superbike with sleek metallic silver and black armor',
+    src: '/IMG-20260904-WA0104.jpg',
+    alt: 'Undergroundz Rider 3',
+  },
+  {
+    id: '04',
+    src: '/IMG-20260904-WA0110.jpg',
+    alt: 'Undergroundz Rider 4',
   },
 ];
 
@@ -54,7 +46,7 @@ export const SystemIndexPage: React.FC<SystemIndexPageProps> = ({
   useEffect(() => {
     if (isPaused) return;
     const interval = setInterval(() => {
-      setActiveSlide((prev) => (prev + 1) % SUPERBIKE_SILVER_VISUALS.length);
+      setActiveSlide((prev) => (prev + 1) % HERO_VISUALS.length);
     }, 3000);
 
     return () => clearInterval(interval);
@@ -83,7 +75,7 @@ export const SystemIndexPage: React.FC<SystemIndexPageProps> = ({
                   src={visual.src}
                   alt={visual.alt}
                   referrerPolicy="no-referrer"
-                  className={`w-full h-full object-cover object-center filter grayscale contrast-125 brightness-85 transition-transform duration-[4000ms] ease-out ${
+                  className={`w-full h-full object-cover object-center filter brightness-105 contrast-110 saturate-110 transition-transform duration-[4000ms] ease-out ${
                     isActive ? 'scale-105' : 'scale-100'
                   }`}
                 />
@@ -91,13 +83,9 @@ export const SystemIndexPage: React.FC<SystemIndexPageProps> = ({
             );
           })}
 
-          {/* Clean Dark Silver & Obsidian Brutalist Overlays */}
-          <div className="absolute inset-0 z-20 bg-gradient-to-t from-[#0c0c0e] via-[#0c0c0e]/60 to-black/45 pointer-events-none" />
-          <div className="absolute inset-0 z-20 bg-gradient-to-r from-black/80 via-black/20 to-black/60 pointer-events-none" />
-          <div className="absolute inset-0 z-20 bg-radial-at-c from-transparent via-transparent to-black/70 pointer-events-none" />
-          
-          {/* Clean Brushed Silver Accent Line at Top */}
-          <div className="absolute top-0 left-0 right-0 h-[1px] z-30 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+          {/* Subdued Overlays for Text Legibility while keeping image clear */}
+          <div className="absolute inset-0 z-20 bg-gradient-to-t from-[#0c0c0e] via-transparent to-transparent pointer-events-none" />
+          <div className="absolute inset-0 z-20 bg-black/10 pointer-events-none" />
         </div>
 
         {/* Hero Content */}
@@ -135,17 +123,6 @@ export const SystemIndexPage: React.FC<SystemIndexPageProps> = ({
 
               <div className="hidden lg:block h-8 w-[1px] bg-white/20"></div>
             </div>
-          </div>
-        </div>
-
-        {/* Bottom Horizon Coordinates Marker */}
-        <div className="absolute right-6 bottom-4 hidden xl:block z-20 pointer-events-none">
-          <div className="flex items-center gap-3 font-body text-[11px] text-[#8e9192] uppercase font-medium tracking-wider">
-            <span>CHASSIS TELEMETRY: ACTIVE</span>
-            <span>•</span>
-            <span>CARBON SPEC: MONOCHROME</span>
-            <span>•</span>
-            <span className="text-white">TITANIUM GRADE</span>
           </div>
         </div>
       </section>
@@ -280,7 +257,7 @@ export const SystemIndexPage: React.FC<SystemIndexPageProps> = ({
           <div className="col-span-12 md:col-span-4">
             <img src="/logo.png" alt="UNDERGROUNDZ" className="h-7 mb-4 object-contain block" />
             <p className="font-body text-xs text-[#9c9ca8] max-w-xs leading-relaxed">
-              Industrial brutalism in garment form. Distributed through verified rider channels only.
+              Premium apparel engineered for the streets. Distributed through verified rider channels only.
             </p>
           </div>
 

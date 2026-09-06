@@ -51,31 +51,9 @@ export default function App() {
         const savedView = sessionStorage.getItem('undergroundz_auth_return_view');
         if (savedView) {
           sessionStorage.removeItem('undergroundz_auth_return_view');
-          sessionStorage.setItem('undergroundz_intro_played', 'true');
           return savedView as ViewType;
         }
-
-        // Avoid playing intro if this is an auth callback in URL
-        const search = window.location.search || '';
-        const hash = window.location.hash || '';
-        const isAuthCallback =
-          search.includes('code=') ||
-          hash.includes('access_token=') ||
-          hash.includes('refresh_token=') ||
-          (window.opener && window.opener !== window);
-
-        if (isAuthCallback) {
-          sessionStorage.setItem('undergroundz_intro_played', 'true');
-          return 'home';
-        }
-
-        // Check if the intro has already played in this tab/session
-        const introPlayedInTab = sessionStorage.getItem('undergroundz_intro_played');
-        if (!introPlayedInTab) {
-          // Mark immediately so even if refreshed while playing or after n refreshes, it never plays a second time
-          sessionStorage.setItem('undergroundz_intro_played', 'true');
-          return 'intro';
-        }
+        return 'home';
       } catch {
         return 'home';
       }
@@ -402,13 +380,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#070708] text-[#e2e2e2] font-body relative selection:bg-[#ff3300] selection:text-white">
-      {/* 4K Cinematic Brand Intro */}
-      {currentView === 'intro' && (
-        <BrandIntroCinematic
-          onComplete={() => setCurrentView('home')}
-          autoPlay={true}
-        />
-      )}
+      {/* Cinematic Brand Intro removed per instructions */}
 
       {/* Top Header */}
       {currentView !== 'intro' && (
