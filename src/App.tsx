@@ -13,11 +13,13 @@ import { CartDrawer } from './components/CartDrawer';
 import { SearchModal } from './components/SearchModal';
 import { SizeGuideModal } from './components/SizeGuideModal';
 import { AccountModal } from './components/AccountModal';
+import { AuthPromptToast } from './components/AuthPromptToast';
 import { AuthDebugPanel } from './components/AuthDebugPanel';
 import { SystemIndexPage } from './views/SystemIndexPage';
 import { CollectionVoidPage } from './views/CollectionVoidPage';
 import { ProductDetailPage } from './views/ProductDetailPage';
 import { CommunityPage } from './views/CommunityPage';
+import { RidersPage } from './views/RidersPage';
 import { CheckoutPage } from './views/CheckoutPage';
 import { OrderConfirmationPage } from './views/OrderConfirmationPage';
 import { MyOrdersPage } from './views/MyOrdersPage';
@@ -103,6 +105,7 @@ export default function App() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [authModalInitialMode, setAuthModalInitialMode] = useState<'signin' | 'signup'>('signin');
 
   // Persist cart to localStorage whenever it changes
   useEffect(() => {
@@ -456,6 +459,14 @@ export default function App() {
         <CommunityPage
           posts={communityPosts}
           onAddPost={handleAddCommunityPost}
+          onViewRiders={() => setCurrentView('riders')}
+        />
+      )}
+
+      {currentView === 'riders' && (
+        <RidersPage
+          setCurrentView={setCurrentView}
+          posts={communityPosts}
         />
       )}
 
@@ -538,6 +549,19 @@ export default function App() {
         onClose={() => setIsAccountOpen(false)}
         user={user}
         setCurrentView={setCurrentView}
+        initialAuthMode={authModalInitialMode}
+      />
+
+      <AuthPromptToast 
+        user={user} 
+        onSignIn={() => {
+          setAuthModalInitialMode('signin');
+          setIsAccountOpen(true);
+        }} 
+        onSignUp={() => {
+          setAuthModalInitialMode('signup');
+          setIsAccountOpen(true);
+        }}
       />
 
       {/* Development Auth Diagnostic Panel */}

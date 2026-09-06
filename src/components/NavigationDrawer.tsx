@@ -23,7 +23,6 @@ import { cn } from "../lib/utils";
 import type { User } from "@supabase/supabase-js";
 import { signOut } from "../lib/supabase";
 import { SidebarDemo } from "./SidebarDemo";
-import { RIDER_MANIFESTO_LINES } from "./RiderManifestoBanner";
 
 interface NavigationDrawerProps {
   isOpen: boolean;
@@ -46,15 +45,6 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
 }) => {
   const [open, setOpen] = useState(true);
   const [showDemoModal, setShowDemoModal] = useState(false);
-  const [manifestoIdx, setManifestoIdx] = useState(0);
-
-  // Cycle through rider lines every 10 seconds with smooth transition
-  React.useEffect(() => {
-    const timer = setInterval(() => {
-      setManifestoIdx((prev) => (prev + 1) % RIDER_MANIFESTO_LINES.length);
-    }, 10000);
-    return () => clearInterval(timer);
-  }, []);
 
   if (!isOpen) return null;
 
@@ -68,23 +58,6 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
   };
 
   const navLinks = [
-    {
-      label: "4K Brand Intro",
-      badge: "VFX",
-      active: currentView === "intro",
-      icon: (
-        <Film
-          className={cn(
-            "h-5 w-5 shrink-0 transition-colors",
-            currentView === "intro" ? "text-red-500" : "text-neutral-400 group-hover/sidebar:text-white"
-          )}
-        />
-      ),
-      onClick: () => {
-        setCurrentView("intro");
-        onClose();
-      },
-    },
     {
       label: "System Index",
       badge: "01",
@@ -228,42 +201,6 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
                           <span className="text-[#bbb]">STATUS: ONLINE</span>
                         </div>
                         <span className="text-[#666]">AES-256</span>
-                      </div>
-                    )}
-
-                    {/* 5s Animated Manifesto Broadcast in Sidebar */}
-                    {open && (
-                      <div className="mb-4 p-3 rounded-none bg-[#101014] border border-[#202026] overflow-hidden relative select-none">
-                        <div className="flex items-center justify-between text-[10px] font-body text-[#71717a] mb-1.5">
-                          <span className="text-white flex items-center gap-1.5 font-semibold tracking-wider uppercase">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#9e1b24]" />
-                            RIDER STATEMENT
-                          </span>
-                          <span className="tracking-wider">0{manifestoIdx + 1}/05</span>
-                        </div>
-                        <div className="min-h-[38px] flex items-center">
-                          <AnimatePresence mode="wait">
-                            <motion.p
-                              key={manifestoIdx}
-                              initial={{ opacity: 0, y: 4, filter: "blur(4px)" }}
-                              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                              exit={{ opacity: 0, y: -4, filter: "blur(3px)" }}
-                              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-                              className="font-display text-sm text-white uppercase font-bold tracking-tight leading-snug"
-                            >
-                              "{RIDER_MANIFESTO_LINES[manifestoIdx]}"
-                            </motion.p>
-                          </AnimatePresence>
-                        </div>
-                        <div className="w-full h-[2px] bg-white/10 mt-2 overflow-hidden">
-                          <motion.div
-                            key={manifestoIdx}
-                            initial={{ width: "0%" }}
-                            animate={{ width: "100%" }}
-                            transition={{ duration: 10, ease: "linear" }}
-                            className="h-full bg-white/70"
-                          />
-                        </div>
                       </div>
                     )}
 

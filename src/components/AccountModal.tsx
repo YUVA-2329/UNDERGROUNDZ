@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   X,
@@ -32,6 +32,7 @@ interface AccountModalProps {
   onClose: () => void;
   user: User | null;
   setCurrentView: (view: ViewType) => void;
+  initialAuthMode?: 'signin' | 'signup';
 }
 
 export const AccountModal: React.FC<AccountModalProps> = ({
@@ -39,8 +40,15 @@ export const AccountModal: React.FC<AccountModalProps> = ({
   onClose,
   user,
   setCurrentView,
+  initialAuthMode = 'signin',
 }) => {
-  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>(initialAuthMode);
+  
+  useEffect(() => {
+    if (isOpen) {
+      setAuthMode(initialAuthMode);
+    }
+  }, [isOpen, initialAuthMode]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');

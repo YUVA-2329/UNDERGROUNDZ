@@ -5,7 +5,7 @@ import { createServer as createViteServer } from 'vite';
 import createRazorpayOrderHandler from './api/create-razorpay-order';
 import verifyRazorpayPaymentHandler from './api/verify-razorpay-payment';
 import telegramNotifyHandler from './api/telegram-notify';
-
+import ugzBotHandler from './api/ugz-bot';
 dotenv.config();
 
 async function startServer() {
@@ -37,6 +37,10 @@ async function startServer() {
 
   app.post('/api/telegram-notify', (req, res) => {
     telegramNotifyHandler(req, res);
+  });
+
+  app.post('/api/ugz-bot', (req, res) => {
+    ugzBotHandler(req, res);
   });
 
   // Vite middleware for development

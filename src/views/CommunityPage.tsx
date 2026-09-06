@@ -6,9 +6,10 @@ import { notifyRiderRegistration } from '../services/telegramNotifications';
 interface CommunityPageProps {
   posts: CommunityPost[];
   onAddPost: (post: CommunityPost) => void;
+  onViewRiders: () => void;
 }
 
-export const CommunityPage: React.FC<CommunityPageProps> = ({ posts, onAddPost }) => {
+export const CommunityPage: React.FC<CommunityPageProps> = ({ posts, onAddPost, onViewRiders }) => {
   const [isSubmitOpen, setIsSubmitOpen] = useState(false);
   const [callsign, setCallsign] = useState('');
   const [sector, setSector] = useState('');
@@ -70,104 +71,26 @@ export const CommunityPage: React.FC<CommunityPageProps> = ({ posts, onAddPost }
         </div>
       </header>
 
-      {/* Masonry / Grid Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {posts.map((post) => {
-          if (post.type === 'verified_member' && post.image) {
-            return (
-              <div
-                key={post.id}
-                className="relative group overflow-hidden border border-[#23232c] bg-[#0e0e12] min-h-[460px] flex flex-col justify-end"
-              >
-                <img
-                  className="absolute inset-0 w-full h-full object-cover grayscale contrast-125 opacity-80 group-hover:scale-105 transition-transform duration-700"
-                  src={post.image}
-                  alt={post.author}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#101014] via-transparent to-transparent opacity-85"></div>
-                <div className="relative z-10 p-8 w-full">
-                  <span className="font-body text-[11px] bg-white text-black font-semibold px-3 py-1 mb-4 inline-block uppercase tracking-wider">
-                    {post.role}
-                  </span>
-                  <h3 className="font-display text-2xl text-white font-bold mb-1 uppercase tracking-tight">{post.author}</h3>
-                  <p className="font-body text-xs text-[#9c9ca8]">{post.location}</p>
-                </div>
-              </div>
-            );
-          }
-
-          if (post.type === 'quote' || post.type === 'review') {
-            return (
-              <div
-                key={post.id}
-                className="p-8 border border-[#23232c] flex flex-col justify-between bg-[#121216] min-h-[260px] relative"
-              >
-                <div>
-                  <span className="material-symbols-outlined text-white mb-4 text-3xl">format_quote</span>
-                  <p className="font-body text-sm text-[#d4d4dc] leading-relaxed">
-                    {post.quote}
-                  </p>
-                </div>
-                <div className="mt-6 pt-4 border-t border-[#23232c] flex justify-between items-center font-body text-xs text-[#8e8e98]">
-                  <span className="font-semibold text-white">— {post.author}</span>
-                  <span>{post.location}</span>
-                </div>
-              </div>
-            );
-          }
-
-          if (post.type === 'velocity' && post.image) {
-            return (
-              <div key={post.id} className="relative overflow-hidden group border border-[#23232c] min-h-[420px] bg-[#121216]">
-                <img
-                  className="w-full h-full object-cover grayscale opacity-75 group-hover:opacity-100 transition-all duration-500"
-                  src={post.image}
-                  alt={post.title}
-                />
-                <div className="absolute bottom-4 left-4 font-body text-xs font-semibold text-white bg-[#101014]/90 px-3 py-1.5 border border-[#2a2a34] uppercase tracking-wider">
-                  {post.title}
-                </div>
-              </div>
-            );
-          }
-
-          // Default photo
-          return (
-            <div key={post.id} className="relative overflow-hidden group border border-[#23232c] min-h-[320px] bg-[#121216]">
-              {post.image ? (
-                <img
-                  className="w-full h-full object-cover grayscale opacity-70 group-hover:opacity-100 transition-all duration-500"
-                  src={post.image}
-                  alt={post.author}
-                />
-              ) : (
-                <div className="p-8 flex flex-col justify-center h-full bg-[#121216]">
-                  <p className="font-body text-sm text-white leading-relaxed">{post.quote}</p>
-                </div>
-              )}
-              <div className="absolute top-4 right-4 h-6 w-6 border-t border-r border-white"></div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Join Community CTA */}
-      <section className="mt-28 border-t border-b border-[#25252e] py-20 flex flex-col items-center text-center">
-        <h2 className="font-display text-4xl sm:text-6xl mb-4 tracking-tight uppercase font-bold text-white">
-          ESTABLISH CONNECTION
-        </h2>
-        <p className="font-body text-base text-[#9c9ca8] max-w-2xl mb-10 leading-relaxed">
-          Submit your field documentation. Selected riders are archived in the System Index and granted access to Prototype Drop Tier 0.
-        </p>
+      {/* Primary Actions */}
+      <div className="flex flex-col md:flex-row gap-6 items-center justify-center mt-20">
         <HoverBorderGradient
           as="button"
-          containerClassName="rounded-none active:scale-95 transition-all"
-          className="px-10 py-4 bg-white text-black font-body text-xs uppercase tracking-wider font-semibold hover:bg-[#d8d8d8] transition-colors"
+          containerClassName="rounded-none active:scale-95 transition-all w-full md:w-auto"
+          className="px-10 py-5 bg-white text-black font-body text-sm uppercase tracking-wider font-semibold hover:bg-[#d8d8d8] transition-colors min-w-[280px]"
           onClick={() => setIsSubmitOpen(true)}
         >
           UPLOAD DISPATCH LOG
         </HoverBorderGradient>
-      </section>
+
+        <HoverBorderGradient
+          as="button"
+          containerClassName="rounded-none active:scale-95 transition-all w-full md:w-auto"
+          className="px-10 py-5 bg-[#101014] text-white border border-[#2a2a34] font-body text-sm uppercase tracking-wider font-semibold hover:bg-[#1a1a20] transition-colors min-w-[280px]"
+          onClick={() => onViewRiders()}
+        >
+          VIEW RIDERS
+        </HoverBorderGradient>
+      </div>
 
       {/* Submission Modal */}
       {isSubmitOpen && (
@@ -224,7 +147,6 @@ export const CommunityPage: React.FC<CommunityPageProps> = ({ posts, onAddPost }
                     <option value="THE REFLECTION HOODIE">THE REFLECTION HOODIE</option>
                     <option value="THE CORE T-SHIRT">THE CORE T-SHIRT</option>
                     <option value="THE TECH SHIRT">THE TECH SHIRT</option>
-                    <option value="THE BRUTALIST SWEATER">THE BRUTALIST SWEATER</option>
                   </select>
                 </div>
 

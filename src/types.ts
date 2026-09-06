@@ -1,4 +1,4 @@
-export type ViewType = 'home' | 'collection' | 'product' | 'community' | 'checkout' | 'order-confirmation' | 'my-orders' | 'intro';
+export type ViewType = 'home' | 'collection' | 'product' | 'community' | 'checkout' | 'order-confirmation' | 'my-orders' | 'intro' | 'riders';
 
 export interface ProductSpec {
   waterproof: string;

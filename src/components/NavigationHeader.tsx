@@ -49,19 +49,6 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
       <div className="hidden md:flex gap-8 items-center">
         <nav className="flex gap-8 items-center">
           <button
-            id="btn-header-intro"
-            onClick={() => setCurrentView('intro')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-sm border text-[11px] font-mono tracking-wider transition-all cursor-pointer ${
-              currentView === 'intro'
-                ? 'bg-white text-black border-white font-bold'
-                : 'bg-white/5 hover:bg-white/15 border-white/20 hover:border-white/40 text-white'
-            }`}
-            title="Play 4K Cinematic Brand Intro"
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-            <span>4K INTRO [5S]</span>
-          </button>
-          <button
             onClick={() => {
               if (onSelectCategory) onSelectCategory('VOID');
               setCurrentView('collection');

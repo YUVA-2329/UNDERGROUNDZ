@@ -188,7 +188,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
               </button>
 
               {/* Pricing & Discount */}
-              <div className="p-5 bg-[#0e0e12] border border-[#202026] mb-6 flex items-baseline justify-between">
+              <div id="pricing-section" className="p-5 bg-[#0e0e12] border border-[#202026] mb-6 flex items-baseline justify-between">
                 <div>
                   <div className="flex items-baseline gap-3">
                     <span className="font-body text-3xl font-bold text-white tracking-tight">

@@ -109,28 +109,9 @@ export const SystemIndexPage: React.FC<SystemIndexPageProps> = ({
                 alt="UNDERGROUNDZ"
                 className="w-full max-w-2xl lg:max-w-3xl mb-3 object-contain object-left filter contrast-125 brightness-110 drop-shadow-[0_4px_24px_rgba(0,0,0,0.95)]"
               />
-              {/* Dynamic 5s Fade In/Fade Out Rider Manifesto in High-Impact Syne Font */}
-              <RiderManifestoBanner variant="hero" className="mb-4" />
-              <p className="font-mono-tech text-xs sm:text-sm text-[#a4a8ad] mt-2.5 tracking-[0.15em] uppercase font-semibold flex items-center gap-2">
-                <span>MATTE CARBON</span>
-                <span>•</span>
-                <span>DARK TITANIUM</span>
-                <span>•</span>
-                <span>AERODYNAMIC RIGOR</span>
-              </p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-              <button
-                id="btn-hero-4k-intro"
-                onClick={() => setCurrentView('intro')}
-                className="flex items-center gap-2.5 px-6 py-3.5 bg-black/90 hover:bg-white/10 border border-white/30 hover:border-white/60 text-white font-mono text-xs uppercase tracking-widest transition-all active:scale-95 cursor-pointer rounded-none group shadow-[0_0_25px_rgba(255,255,255,0.08)]"
-              >
-                <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
-                <span className="font-bold">4K BRAND INTRO</span>
-                <span className="text-[10px] text-white/50 group-hover:text-white transition-colors">[5S]</span>
-              </button>
-
               <HoverBorderGradient
                 containerClassName="rounded-none shadow-lg active:scale-95 transition-all duration-300"
                 as="button"
@@ -153,10 +134,6 @@ export const SystemIndexPage: React.FC<SystemIndexPageProps> = ({
               </HoverBorderGradient>
 
               <div className="hidden lg:block h-8 w-[1px] bg-white/20"></div>
-
-              <p className="max-w-xs font-body text-xs text-[#a8adb3] leading-relaxed">
-                Technical brutalist apparel engineered with aerodynamic precision for high-displacement machines.
-              </p>
             </div>
           </div>
         </div>
@@ -312,7 +289,7 @@ export const SystemIndexPage: React.FC<SystemIndexPageProps> = ({
             <ul className="space-y-2.5 font-body text-xs text-[#8e8e98]">
               <li><button onClick={() => setCurrentView('home')} className="hover:text-white transition-colors">Logistics</button></li>
               <li><button onClick={() => setCurrentView('home')} className="hover:text-white transition-colors">Protocols</button></li>
-              <li><button onClick={() => setCurrentView('community')} className="hover:text-white transition-colors">Manifesto</button></li>
+              <li><button onClick={() => setCurrentView('community')} className="hover:text-white transition-colors">Dispatch</button></li>
             </ul>
           </div>
 
