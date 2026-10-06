@@ -9,7 +9,7 @@
 
 ## 🎬 Demo & 📸 Screenshots
 
-![UNDERGROUNDZ Preview](https://via.placeholder.com/800x400?text=UNDERGROUNDZ+Preview)
+
 
 *(Project preview and screenshots demonstrating the core user experience)*
 
